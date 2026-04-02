@@ -519,7 +519,8 @@ async function startAnalysis() {
   const btn = document.getElementById('submit-btn');
   const loadingBar = document.getElementById('loading-bar');
   if (!username) { status.textContent = 'Gecerli bir Instagram hesap linki girin.'; status.className = 'form-status error'; return; }
-  if (getDailyCount() >= MAX_DAILY) { status.textContent = 'Gunluk limit doldu (3/3). Yarin tekrar deneyin.'; status.className = 'form-status error'; return; }
+  // Limit goruntusu kalsin ama engellemesin
+  // if (getDailyCount() >= MAX_DAILY) { status.textContent = 'Gunluk limit doldu (3/3). Yarin tekrar deneyin.'; status.className = 'form-status error'; return; }
   btn.disabled = true;
   btn.textContent = 'Baslatiliyor...';
   status.textContent = `@${username} analiz ediliyor. Bu islem yaklasik 10 dakika surebilir.`;
