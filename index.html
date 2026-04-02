@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KALI. — Instagram Icerik Analiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--black:#000;--white:#fff;--red:#D42B2B;--gray-50:#f8f8f8;--gray-100:#f0f0f0;--gray-200:#e0e0e0;--gray-400:#999;--gray-600:#666;--gray-800:#222}
+body{font-family:'Inter',sans-serif;background:var(--black);color:var(--white);min-height:100vh;overflow-x:hidden}
+
+/* PIN SCREEN */
+#pin-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--black);position:fixed;top:0;left:0;width:100%;z-index:1000}
+.pin-container{text-align:center;max-width:360px;padding:40px}
+.pin-logo{font-family:'Playfair Display',serif;font-size:48px;font-weight:700;letter-spacing:4px;margin-bottom:8px}
+.pin-logo span{color:var(--red)}
+.pin-subtitle{font-size:13px;color:var(--gray-400);letter-spacing:2px;text-transform:uppercase;margin-bottom:48px}
+.pin-input-wrap{display:flex;gap:8px;justify-content:center;margin-bottom:24px}
+.pin-digit{width:48px;height:56px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:var(--white);font-size:24px;text-align:center;font-family:'Inter',sans-serif;outline:none;transition:border-color .2s}
+.pin-digit:focus{border-color:var(--red)}
+.pin-digit.filled{border-color:rgba(255,255,255,0.3)}
+.pin-error{color:var(--red);font-size:13px;min-height:20px;margin-bottom:16px}
+.pin-lockout{color:var(--red);font-size:14px;font-weight:500}
+.pin-btn{width:100%;padding:14px;background:var(--red);color:var(--white);border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;letter-spacing:1px;transition:opacity .2s}
+.pin-btn:hover{opacity:.9}
+.pin-btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* MAIN APP */
+#app{display:none}
+
+/* HEADER */
+.header{background:var(--black);border-bottom:1px solid rgba(255,255,255,0.08);padding:20px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.header-logo{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;letter-spacing:3px}
+.header-logo span{color:var(--red)}
+.header-right{display:flex;align-items:center;gap:16px}
+.daily-counter{font-size:12px;color:var(--gray-400);background:rgba(255,255,255,0.06);padding:6px 14px;border-radius:20px}
+.daily-counter b{color:var(--white)}
+.logout-btn{background:none;border:1px solid rgba(255,255,255,0.15);color:var(--gray-400);padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;transition:all .2s}
+.logout-btn:hover{border-color:var(--red);color:var(--red)}
+
+/* FORM SECTION */
+.form-section{max-width:640px;margin:60px auto;padding:0 24px;text-align:center}
+.form-title{font-family:'Playfair Display',serif;font-size:32px;font-weight:700;margin-bottom:8px}
+.form-desc{color:var(--gray-400);font-size:14px;margin-bottom:36px;line-height:1.6}
+.input-group{display:flex;gap:12px;margin-bottom:16px}
+.input-field{flex:1;padding:14px 18px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:var(--white);font-size:15px;font-family:'Inter',sans-serif;outline:none;transition:border-color .2s}
+.input-field:focus{border-color:var(--red)}
+.input-field::placeholder{color:var(--gray-600)}
+.submit-btn{padding:14px 32px;background:var(--red);color:var(--white);border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;letter-spacing:.5px;transition:all .2s;white-space:nowrap}
+.submit-btn:hover{opacity:.9;transform:translateY(-1px)}
+.submit-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.form-status{margin-top:16px;font-size:13px;color:var(--gray-400);min-height:20px}
+.form-status.error{color:var(--red)}
+.form-status.success{color:#4ade80}
+
+/* LOADING */
+.loading-bar{width:100%;height:3px;background:rgba(255,255,255,0.06);position:relative;overflow:hidden;border-radius:2px;margin-top:20px;display:none}
+.loading-bar.active{display:block}
+.loading-bar::after{content:'';position:absolute;top:0;left:-40%;width:40%;height:100%;background:linear-gradient(90deg,transparent,var(--red),transparent);animation:loading 1.5s infinite}
+@keyframes loading{0%{left:-40%}100%{left:100%}}
+
+/* RESULTS */
+.results-section{max-width:1200px;margin:0 auto;padding:0 24px 60px}
+.results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.08)}
+.results-title{font-family:'Playfair Display',serif;font-size:24px}
+.results-count{font-size:13px;color:var(--gray-400)}
+.results-filters{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap}
+.filter-btn{padding:6px 16px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:20px;color:var(--gray-400);font-size:12px;cursor:pointer;transition:all .2s}
+.filter-btn:hover,.filter-btn.active{background:var(--red);border-color:var(--red);color:var(--white)}
+
+/* CARD GRID */
+.card-grid{display:grid;grid-template-columns:1fr;gap:16px}
+.card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;overflow:hidden;transition:all .3s}
+.card:hover{border-color:rgba(212,43,43,0.3);transform:translateY(-2px);box-shadow:0 8px 32px rgba(212,43,43,0.08)}
+.card-top{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.card-video{position:relative;aspect-ratio:9/16;max-height:280px;background:var(--gray-800);overflow:hidden}
+.card-video iframe{width:100%;height:100%;border:none}
+.card-video .placeholder{display:flex;align-items:center;justify-content:center;height:100%;color:var(--gray-600);font-size:13px;flex-direction:column;gap:8px}
+.card-video .placeholder a{color:var(--red);text-decoration:none;font-weight:500;font-size:12px}
+.card-meta{padding:20px;display:flex;flex-direction:column;gap:12px}
+.card-channel{font-size:11px;color:var(--red);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.card-title{font-size:14px;font-weight:500;line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.card-stats{display:flex;gap:12px;flex-wrap:wrap}
+.stat{font-size:11px;color:var(--gray-400)}
+.stat b{color:var(--white);font-weight:600}
+.card-badges{display:flex;gap:6px;flex-wrap:wrap}
+.badge{padding:3px 10px;border-radius:12px;font-size:10px;font-weight:600;letter-spacing:.5px}
+.badge-high{background:rgba(212,43,43,0.15);color:var(--red)}
+.badge-medium{background:rgba(255,200,50,0.15);color:#ffc832}
+.badge-low{background:rgba(74,222,128,0.12);color:#4ade80}
+.badge-category{background:rgba(255,255,255,0.06);color:var(--gray-400)}
+.badge-hook{background:rgba(212,43,43,0.1);color:var(--red)}
+
+/* CARD BODY */
+.card-body{padding:0 20px 20px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.card-section{background:rgba(255,255,255,0.02);border-radius:8px;padding:14px}
+.card-section-title{font-size:10px;color:var(--red);font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px}
+.card-section-text{font-size:12px;color:var(--gray-400);line-height:1.7}
+.card-section.full-width{grid-column:1/-1}
+.card-section.script{background:rgba(212,43,43,0.04);border:1px solid rgba(212,43,43,0.1)}
+.card-section.script .card-section-text{color:var(--white);font-size:13px}
+
+/* SEPARATOR ROW */
+.separator{background:var(--red);padding:12px 20px;border-radius:8px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.separator-text{font-weight:700;font-size:14px;letter-spacing:1px}
+.separator-date{font-size:12px;opacity:.8}
+
+/* EXPAND/COLLAPSE */
+.card-toggle{width:100%;padding:10px;background:none;border:none;border-top:1px solid rgba(255,255,255,0.06);color:var(--gray-400);font-size:12px;cursor:pointer;transition:color .2s}
+.card-toggle:hover{color:var(--white)}
+.card-body.collapsed{display:none}
+
+/* MOBILE */
+@media(max-width:768px){
+  .card-top{grid-template-columns:1fr}
+  .card-body{grid-template-columns:1fr}
+  .input-group{flex-direction:column}
+  .header{padding:16px 20px}
+  .form-section{margin:40px auto}
+  .form-title{font-size:24px}
+}
+</style>
+</head>
+<body>
+
+<!-- PIN SCREEN -->
+<div id="pin-screen">
+  <div class="pin-container">
+    <div class="pin-logo">KALI<span>.</span></div>
+    <div class="pin-subtitle">Sosyal Medya Analiz</div>
+    <div class="pin-input-wrap">
+      <input class="pin-digit" type="password" maxlength="1" inputmode="numeric" autofocus>
+      <input class="pin-digit" type="password" maxlength="1" inputmode="numeric">
+      <input class="pin-digit" type="password" maxlength="1" inputmode="numeric">
+      <input class="pin-digit" type="password" maxlength="1" inputmode="numeric">
+      <input class="pin-digit" type="password" maxlength="1" inputmode="numeric">
+      <input class="pin-digit" type="password" maxlength="1" inputmode="numeric">
+    </div>
+    <div class="pin-error" id="pin-error"></div>
+    <button class="pin-btn" id="pin-btn" onclick="checkPin()">Giris Yap</button>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <header class="header">
+    <div class="header-logo">KALI<span>.</span></div>
+    <div class="header-right">
+      <div class="daily-counter">Bugun: <b id="daily-count">0</b>/3 analiz</div>
+      <button class="logout-btn" onclick="logout()">Cikis</button>
+    </div>
+  </header>
+
+  <div class="form-section">
+    <div class="form-title">Instagram Analiz</div>
+    <div class="form-desc">Analiz etmek istediginiz hesabin Instagram linkini yapistirin.<br>Viral videolar taranacak, transkript cikarilacak ve icerik onerileri uretilecek.</div>
+    <div class="input-group">
+      <input class="input-field" id="ig-input" type="text" placeholder="ornek: https://www.instagram.com/ryanserhant/">
+      <button class="submit-btn" id="submit-btn" onclick="startAnalysis()">Analizi Baslat</button>
+    </div>
+    <div class="form-status" id="form-status"></div>
+    <div class="loading-bar" id="loading-bar"></div>
+  </div>
+
+  <div class="results-section" id="results-section" style="display:none">
+    <div class="results-header">
+      <div class="results-title">Analiz Sonuclari</div>
+      <div class="results-count" id="results-count"></div>
+    </div>
+    <div class="results-filters" id="results-filters"></div>
+    <div id="card-container"></div>
+  </div>
+</div>
+
+<script>
+// CONFIG
+const PIN_HASH = '592f541a1e5f4fccd1460ba5eec2bdb42ca41f90207d4a84fb80eca9aaf92b39';
+const WEBHOOK_URL = 'https://n8n.srv1193133.hstgr.cloud/webhook/kali-analiz-api';
+const WEBHOOK_SECRET = 'kali_sec_2026_xR9m';
+const SHEET_ID = '1LxfaMycxFxfC0OZNiEIXUmjVo4zbtDgRAPNPqxf1sZg';
+const SHEET_TAB = 'Analiz';
+const MAX_DAILY = 3;
+const LOCKOUT_MS = 5 * 60 * 1000;
+
+let attempts = 0;
+let lockoutUntil = 0;
+
+// SHA-256 hash
+async function sha256(msg) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// PIN LOGIC
+const pinDigits = document.querySelectorAll('.pin-digit');
+pinDigits.forEach((el, i) => {
+  el.addEventListener('input', () => {
+    el.classList.toggle('filled', el.value.length > 0);
+    if (el.value && i < 5) pinDigits[i + 1].focus();
+    if (i === 5 && el.value) checkPin();
+  });
+  el.addEventListener('keydown', (e) => {
+    if (e.key === 'Backspace' && !el.value && i > 0) pinDigits[i - 1].focus();
+  });
+});
+
+async function checkPin() {
+  const now = Date.now();
+  if (now < lockoutUntil) {
+    const secs = Math.ceil((lockoutUntil - now) / 1000);
+    document.getElementById('pin-error').textContent = `Cok fazla deneme. ${secs}sn bekleyin.`;
+    return;
+  }
+
+  const pin = Array.from(pinDigits).map(el => el.value).join('');
+  if (pin.length < 6) return;
+
+  const hash = await sha256(pin);
+  if (hash === PIN_HASH) {
+    attempts = 0;
+    sessionStorage.setItem('kali_auth', '1');
+    document.getElementById('pin-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    updateDailyCounter();
+    loadResults();
+  } else {
+    attempts++;
+    pinDigits.forEach(el => { el.value = ''; el.classList.remove('filled'); });
+    pinDigits[0].focus();
+
+    if (attempts >= 3) {
+      lockoutUntil = now + LOCKOUT_MS;
+      document.getElementById('pin-error').textContent = '3 yanlis deneme. 5 dakika beklemelisiniz.';
+      document.getElementById('pin-btn').disabled = true;
+      setTimeout(() => {
+        document.getElementById('pin-btn').disabled = false;
+        document.getElementById('pin-error').textContent = '';
+        attempts = 0;
+      }, LOCKOUT_MS);
+    } else {
+      document.getElementById('pin-error').textContent = `Yanlis PIN. ${3 - attempts} deneme hakkiniz kaldi.`;
+    }
+  }
+}
+
+// SESSION CHECK
+if (sessionStorage.getItem('kali_auth') === '1') {
+  document.getElementById('pin-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  updateDailyCounter();
+  loadResults();
+}
+
+function logout() {
+  sessionStorage.removeItem('kali_auth');
+  location.reload();
+}
+
+// DAILY LIMIT
+function getDailyKey() {
+  const d = new Date();
+  return `kali_daily_${d.getFullYear()}_${d.getMonth()}_${d.getDate()}`;
+}
+
+function getDailyCount() {
+  return parseInt(localStorage.getItem(getDailyKey()) || '0');
+}
+
+function incrementDaily() {
+  const count = getDailyCount() + 1;
+  localStorage.setItem(getDailyKey(), count);
+  updateDailyCounter();
+}
+
+function updateDailyCounter() {
+  document.getElementById('daily-count').textContent = getDailyCount();
+}
+
+// PARSE USERNAME
+function parseUsername(input) {
+  let u = input.trim();
+  if (u.includes('instagram.com')) {
+    const parts = u.split('instagram.com/');
+    u = parts[parts.length - 1];
+  }
+  return u.replace(/^@/, '').replace(/\/.*$/, '').replace(/\?.*$/, '').trim();
+}
+
+// START ANALYSIS
+async function startAnalysis() {
+  const input = document.getElementById('ig-input').value;
+  const username = parseUsername(input);
+  const status = document.getElementById('form-status');
+  const btn = document.getElementById('submit-btn');
+  const loadingBar = document.getElementById('loading-bar');
+
+  if (!username) {
+    status.textContent = 'Gecerli bir Instagram hesap linki girin.';
+    status.className = 'form-status error';
+    return;
+  }
+
+  if (getDailyCount() >= MAX_DAILY) {
+    status.textContent = 'Gunluk analiz limitine ulastiniz (3/3). Yarin tekrar deneyin.';
+    status.className = 'form-status error';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Analiz Baslatiliyor...';
+  status.textContent = `@${username} hesabi analiz ediliyor. Bu islem 3-8 dakika surebilir.`;
+  status.className = 'form-status';
+  loadingBar.classList.add('active');
+
+  try {
+    const resp = await fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, secret: WEBHOOK_SECRET })
+    });
+
+    if (!resp.ok) throw new Error('Webhook hatasi');
+
+    incrementDaily();
+    status.textContent = `@${username} analizi baslatildi! Sonuclar 3-8 dk icinde asagida gorunecek.`;
+    status.className = 'form-status success';
+
+    // Poll for results
+    pollForResults(username);
+  } catch (e) {
+    status.textContent = 'Bir hata olustu. Lutfen tekrar deneyin.';
+    status.className = 'form-status error';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Analizi Baslat';
+  }
+}
+
+// POLL FOR NEW RESULTS
+function pollForResults(username) {
+  let polls = 0;
+  const maxPolls = 40; // 40 x 15s = 10 min max
+  const loadingBar = document.getElementById('loading-bar');
+  const status = document.getElementById('form-status');
+
+  const interval = setInterval(async () => {
+    polls++;
+    if (polls > maxPolls) {
+      clearInterval(interval);
+      loadingBar.classList.remove('active');
+      status.textContent = 'Analiz tamamlanamadi. Lutfen n8n workflow durumunu kontrol edin.';
+      status.className = 'form-status error';
+      return;
+    }
+
+    try {
+      const data = await fetchSheetData();
+      // Check if username appears in recent rows
+      const hasNew = data.some(row => row['Kanal'] && row['Kanal'].toLowerCase().includes(username.toLowerCase()));
+      if (hasNew) {
+        clearInterval(interval);
+        loadingBar.classList.remove('active');
+        status.textContent = `@${username} analizi tamamlandi!`;
+        status.className = 'form-status success';
+        renderResults(data);
+      }
+    } catch (e) { /* keep polling */ }
+  }, 15000);
+}
+
+// FETCH SHEET DATA
+async function fetchSheetData() {
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_TAB)}`;
+  const resp = await fetch(url);
+  const text = await resp.text();
+  // Google returns JSONP-like response
+  const jsonStr = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]+)\);?/);
+  if (!jsonStr) return [];
+
+  const json = JSON.parse(jsonStr[1]);
+  const cols = json.table.cols.map(c => c.label || '');
+  const rows = [];
+
+  for (const row of json.table.rows) {
+    const obj = {};
+    row.c.forEach((cell, i) => {
+      obj[cols[i]] = cell ? (cell.v || '') : '';
+    });
+    rows.push(obj);
+  }
+  return rows;
+}
+
+// LOAD EXISTING RESULTS
+async function loadResults() {
+  try {
+    const data = await fetchSheetData();
+    if (data.length > 0) renderResults(data);
+  } catch (e) { /* silent */ }
+}
+
+// RENDER RESULTS
+function renderResults(data) {
+  const section = document.getElementById('results-section');
+  const container = document.getElementById('card-container');
+  const countEl = document.getElementById('results-count');
+  const filtersEl = document.getElementById('results-filters');
+  section.style.display = 'block';
+
+  // Group by separator rows (No === '>>')
+  const groups = [];
+  let currentGroup = null;
+
+  for (const row of data) {
+    if (String(row['No']).trim() === '>>') {
+      currentGroup = { separator: row, items: [] };
+      groups.push(currentGroup);
+    } else if (currentGroup && row['No']) {
+      currentGroup.items.push(row);
+    } else if (!currentGroup && row['No']) {
+      // Items without separator (old data)
+      if (!groups.length || groups[groups.length - 1].separator) {
+        groups.push({ separator: null, items: [] });
+      }
+      groups[groups.length - 1].items.push(row);
+    }
+  }
+
+  // Reverse groups to show newest first
+  groups.reverse();
+
+  const totalItems = groups.reduce((sum, g) => sum + g.items.length, 0);
+  countEl.textContent = `${totalItems} icerik fikri`;
+
+  // Collect categories for filters
+  const categories = new Set();
+  groups.forEach(g => g.items.forEach(item => {
+    if (item['Konu Kategorisi']) categories.add(item['Konu Kategorisi']);
+  }));
+
+  filtersEl.innerHTML = '<button class="filter-btn active" onclick="filterCards(\'all\', this)">Tumu</button>';
+  categories.forEach(cat => {
+    filtersEl.innerHTML += `<button class="filter-btn" onclick="filterCards('${cat}', this)">${cat}</button>`;
+  });
+
+  // Render
+  container.innerHTML = '';
+  groups.forEach(group => {
+    if (group.separator) {
+      const sep = document.createElement('div');
+      sep.className = 'separator';
+      sep.innerHTML = `
+        <div class="separator-text">@${group.separator['Kanal'] || ''}</div>
+        <div class="separator-date">${group.separator['Baslik'] || ''}</div>
+      `;
+      container.appendChild(sep);
+    }
+
+    group.items.forEach((item, idx) => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.setAttribute('data-category', item['Konu Kategorisi'] || '');
+
+      const reelCode = extractReelCode(item['Video URL'] || '');
+      const priority = (item['Oncelik'] || '').toUpperCase();
+      const badgeClass = priority === 'HIGH' ? 'badge-high' : priority === 'MEDIUM' ? 'badge-medium' : 'badge-low';
+      const hookScore = item['Hook Skoru'] || '';
+
+      card.innerHTML = `
+        <div class="card-top">
+          <div class="card-video">
+            ${reelCode
+              ? `<div class="placeholder"><a href="${item['Video URL']}" target="_blank" rel="noopener">Videoyu Instagram'da Ac</a><span style="font-size:11px;margin-top:4px">@${item['Kanal'] || ''}</span></div>`
+              : `<div class="placeholder">Video yok</div>`
+            }
+          </div>
+          <div class="card-meta">
+            <div class="card-channel">@${item['Kanal'] || ''}</div>
+            <div class="card-title">${item['Baslik'] || ''}</div>
+            <div class="card-stats">
+              <div class="stat"><b>${formatNum(item['Views'])}</b> views</div>
+              <div class="stat"><b>${formatNum(item['Likes'])}</b> likes</div>
+              <div class="stat"><b>${formatNum(item['Comments'])}</b> comments</div>
+              <div class="stat"><b>${item['Engagement Rate'] || ''}</b></div>
+            </div>
+            <div class="card-badges">
+              <span class="badge ${badgeClass}">${priority || 'N/A'}</span>
+              <span class="badge badge-category">${item['Konu Kategorisi'] || ''}</span>
+              ${hookScore ? `<span class="badge badge-hook">Hook: ${hookScore}/10</span>` : ''}
+            </div>
+          </div>
+        </div>
+        <div class="card-body collapsed" id="card-body-${idx}">
+          <div class="card-section">
+            <div class="card-section-title">Hook & Icerik Analizi</div>
+            <div class="card-section-text">${item['Hook ve Icerik Analizi'] || ''}</div>
+          </div>
+          <div class="card-section">
+            <div class="card-section-title">Neden Viral</div>
+            <div class="card-section-text">${item['Neden Viral'] || ''}</div>
+          </div>
+          <div class="card-section">
+            <div class="card-section-title">Video Yapisi</div>
+            <div class="card-section-text">${item['Video Yapisi'] || ''}</div>
+          </div>
+          <div class="card-section">
+            <div class="card-section-title">Kali Adaptasyonu</div>
+            <div class="card-section-text">${item['Kali Adaptasyonu'] || ''}</div>
+          </div>
+          <div class="card-section full-width script">
+            <div class="card-section-title">Kerem Icin Script</div>
+            <div class="card-section-text">${item['Kerem Icin Script'] || ''}</div>
+          </div>
+          <div class="card-section full-width">
+            <div class="card-section-title">Produksiyon Notlari</div>
+            <div class="card-section-text">${item['Produksiyon Notlari'] || ''}</div>
+          </div>
+          ${item['Tam Transkript'] ? `
+          <div class="card-section full-width">
+            <div class="card-section-title">Orijinal Transkript</div>
+            <div class="card-section-text" style="font-style:italic;opacity:.7">${item['Tam Transkript']}</div>
+          </div>` : ''}
+        </div>
+        <button class="card-toggle" onclick="toggleCard('card-body-${idx}', this)">Detaylari Goster</button>
+      `;
+      container.appendChild(card);
+    });
+  });
+}
+
+function toggleCard(id, btn) {
+  const body = document.getElementById(id);
+  const collapsed = body.classList.toggle('collapsed');
+  btn.textContent = collapsed ? 'Detaylari Goster' : 'Detaylari Gizle';
+}
+
+function filterCards(category, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.card').forEach(card => {
+    if (category === 'all' || card.getAttribute('data-category') === category) {
+      card.style.display = '';
+    } else {
+      card.style.display = 'none';
+    }
+  });
+}
+
+function extractReelCode(url) {
+  const m = url.match(/\/reel\/([A-Za-z0-9_-]+)/);
+  return m ? m[1] : '';
+}
+
+function formatNum(n) {
+  const num = parseInt(n) || 0;
+  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+  if (num >= 1000) return (num / 1000).toFixed(0) + 'K';
+  return num.toString();
+}
+</script>
+</body>
+</html>
