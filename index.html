@@ -67,6 +67,16 @@ a{color:inherit;text-decoration:none}
 .loading-bar::after{content:'';position:absolute;top:0;left:-40%;width:40%;height:100%;background:linear-gradient(90deg,transparent,var(--red),transparent);animation:loading 1.5s infinite}
 @keyframes loading{0%{left:-40%}100%{left:100%}}
 
+/* DINO GAME */
+.dino-wrapper{max-width:620px;margin:0 auto;padding:0 20px;text-align:center}
+.dino-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding:0 4px}
+.dino-timer{font-size:12px;color:var(--gray-400);font-style:italic}
+.dino-score{font-size:12px;color:var(--gray-400)}
+.dino-score b{color:var(--red);font-size:14px}
+#dino-canvas{display:block;margin:0 auto;border:1px solid rgba(255,255,255,0.08);border-radius:var(--radius-md);background:var(--surface-1);max-width:100%;cursor:pointer}
+.dino-hint{font-size:11px;color:var(--gray-600);margin-top:10px;letter-spacing:.3px}
+.dino-hint kbd{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:4px;padding:2px 6px;font-family:'Inter',sans-serif;font-size:10px;color:var(--gray-400)}
+
 /* HISTORY SECTION */
 .history-section{max-width:720px;margin:0 auto;padding:0 20px 60px}
 .history-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
@@ -184,27 +194,42 @@ body.modal-open{overflow:hidden}
 
 /* ============ RESPONSIVE ============ */
 @media(max-width:480px){
+  /* PIN SCREEN — tam ortala, yukari cek */
+  #pin-screen{align-items:center;justify-content:center}
+  .pin-container{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px;margin-top:-15vh}
+  .pin-logo{margin-bottom:16px}
+  .pin-logo img{width:260px;max-width:70vw}
+  .pin-subtitle{margin-bottom:32px;font-size:11px}
+  .pin-digit{width:42px;height:50px;font-size:20px}
+  /* HEADER */
   .header{padding:12px 16px}
-  .header-logo img{height:26px}
+  .header-logo img{height:52px}
+  /* FORM */
   .form-section{margin:32px auto 28px}
   .form-title{font-size:22px}
   .form-desc{font-size:12px;margin-bottom:20px}
   .input-group{flex-direction:column}
   .submit-btn{width:100%}
+  /* HISTORY */
   .analysis-card{padding:16px}
   .ac-avatar{width:40px;height:40px;font-size:16px}
   .ac-username{font-size:14px}
   .ac-meta{font-size:11px}
+  /* VIDEO GRID */
   .video-grid{grid-template-columns:1fr;gap:12px}
+  /* MODAL */
   .modal-overlay{padding:0}
   .modal{border-radius:0;min-height:100vh}
   .modal-header{padding:16px}
   .modal-sections{padding:0 16px 16px}
   .modal-title{font-size:16px}
+  /* ACCOUNT */
   .account-header{padding:16px 16px 0}
   .account-name{font-size:20px}
   .filters-row{padding:0 16px}
   .video-grid{padding:0 16px 40px}
+  /* DINO */
+  #dino-canvas{max-height:160px}
 }
 @media(min-width:481px) and (max-width:768px){
   .video-grid{grid-template-columns:repeat(2,1fr)}
@@ -262,6 +287,18 @@ body.modal-open{overflow:hidden}
       </div>
       <div class="form-status" id="form-status"></div>
       <div class="loading-bar" id="loading-bar"></div>
+    </div>
+
+    <!-- DINO GAME (analiz beklerken) -->
+    <div id="dino-section" style="display:none">
+      <div class="dino-wrapper">
+        <div class="dino-header">
+          <span class="dino-timer" id="dino-timer">Analiz yaklasik 10 dakika surebilir</span>
+          <span class="dino-score">Skor: <b id="dino-score-display">0</b></span>
+        </div>
+        <canvas id="dino-canvas" width="600" height="200"></canvas>
+        <div class="dino-hint">Ziplamak icin <kbd>SPACE</kbd> veya ekrana <kbd>DOKUN</kbd></div>
+      </div>
     </div>
 
     <div class="history-section" id="history-section" style="display:none">
@@ -485,9 +522,10 @@ async function startAnalysis() {
   if (getDailyCount() >= MAX_DAILY) { status.textContent = 'Gunluk limit doldu (3/3). Yarin tekrar deneyin.'; status.className = 'form-status error'; return; }
   btn.disabled = true;
   btn.textContent = 'Baslatiliyor...';
-  status.textContent = `@${username} analiz ediliyor. Bu islem 3-8 dk surebilir.`;
+  status.textContent = `@${username} analiz ediliyor. Bu islem yaklasik 10 dakika surebilir.`;
   status.className = 'form-status';
   loadingBar.classList.add('active');
+  DinoGame.start();
   try {
     // Mevcut satir sayisini kaydet (yeni veri tespiti icin)
     let rowCountBefore = 0;
@@ -505,6 +543,7 @@ async function startAnalysis() {
     btn.disabled = false;
     btn.textContent = 'Analiz Et';
     loadingBar.classList.remove('active');
+    DinoGame.stop();
   }
 }
 
@@ -520,6 +559,7 @@ function pollForResults(username, rowCountBefore) {
     if (polls > MAX_POLLS) {
       clearInterval(interval);
       loadingBar.classList.remove('active');
+      DinoGame.stop();
       status.textContent = 'Zaman asimi. n8n workflow durumunu kontrol edin.';
       status.className = 'form-status error';
       btn.disabled = false; btn.textContent = 'Analiz Et';
@@ -540,6 +580,7 @@ function pollForResults(username, rowCountBefore) {
         if (hasNew) {
           clearInterval(interval);
           loadingBar.classList.remove('active');
+          DinoGame.stop();
           status.textContent = `@${username} analizi tamamlandi! Asagida goruntuleyebilirsiniz.`;
           status.className = 'form-status success';
           btn.disabled = false; btn.textContent = 'Analiz Et';
@@ -805,6 +846,175 @@ function section(title, text) {
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && document.getElementById('modal-overlay').classList.contains('active')) closeModal();
 });
+
+// ============ DINO GAME ============
+const DinoGame = (() => {
+  let canvas, ctx, animFrame;
+  let dino, ground, cacti, clouds, score, gameOver, started;
+  let gravity = 0.6, speed = 4, frameCount = 0;
+  const W = 600, H = 200, GROUND_Y = 160;
+
+  function init() {
+    canvas = document.getElementById('dino-canvas');
+    if (!canvas) return;
+    ctx = canvas.getContext('2d');
+    canvas.width = W; canvas.height = H;
+    reset();
+    canvas.addEventListener('click', handleInput);
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handleInput(); }, {passive:false});
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' && document.getElementById('dino-section').style.display !== 'none') {
+        e.preventDefault(); handleInput();
+      }
+    });
+  }
+
+  function reset() {
+    dino = { x:50, y:GROUND_Y-40, w:30, h:40, vy:0, jumping:false };
+    cacti = [];
+    clouds = [];
+    score = 0; gameOver = false; started = false; frameCount = 0; speed = 4;
+    for (let i=0;i<3;i++) clouds.push({x:Math.random()*W, y:20+Math.random()*40, w:40+Math.random()*30});
+  }
+
+  function handleInput() {
+    if (gameOver) { reset(); started = true; loop(); return; }
+    if (!started) { started = true; loop(); }
+    if (!dino.jumping) { dino.vy = -12; dino.jumping = true; }
+  }
+
+  function spawnCactus() {
+    const h = 20 + Math.random()*30;
+    cacti.push({ x:W, y:GROUND_Y-h, w:12+Math.random()*8, h:h });
+  }
+
+  function update() {
+    if (gameOver) return;
+    frameCount++;
+    score = Math.floor(frameCount/6);
+    document.getElementById('dino-score-display').textContent = score;
+    if (frameCount % 300 === 0) speed += 0.3;
+
+    // Dino physics
+    dino.vy += gravity;
+    dino.y += dino.vy;
+    if (dino.y >= GROUND_Y - dino.h) { dino.y = GROUND_Y - dino.h; dino.vy = 0; dino.jumping = false; }
+
+    // Cacti
+    if (frameCount % Math.floor(80 + Math.random()*60) === 0) spawnCactus();
+    for (let c of cacti) c.x -= speed;
+    cacti = cacti.filter(c => c.x + c.w > -10);
+
+    // Clouds
+    for (let cl of clouds) cl.x -= speed * 0.3;
+    clouds = clouds.filter(cl => cl.x + cl.w > -10);
+    if (Math.random() < 0.005) clouds.push({x:W, y:15+Math.random()*45, w:40+Math.random()*30});
+
+    // Collision
+    for (let c of cacti) {
+      if (dino.x + dino.w - 6 > c.x && dino.x + 6 < c.x + c.w && dino.y + dino.h > c.y) {
+        gameOver = true;
+      }
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0,0,W,H);
+
+    // Clouds
+    ctx.fillStyle = 'rgba(255,255,255,0.06)';
+    for (let cl of clouds) {
+      ctx.beginPath();
+      ctx.ellipse(cl.x+cl.w/2, cl.y, cl.w/2, 8, 0, 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    // Ground
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0,GROUND_Y); ctx.lineTo(W,GROUND_Y); ctx.stroke();
+    // Ground dots
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    for (let i=0;i<W;i+=20) {
+      const off = (frameCount * speed) % 20;
+      ctx.fillRect(i - off, GROUND_Y + 4 + Math.random()*3, 2, 1);
+    }
+
+    // Dino (Kali red dinosaur)
+    ctx.fillStyle = '#D42B2B';
+    // Body
+    ctx.fillRect(dino.x+4, dino.y+8, 22, 24);
+    // Head
+    ctx.fillRect(dino.x+14, dino.y, 16, 14);
+    // Eye
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(dino.x+24, dino.y+3, 3, 3);
+    // Legs
+    ctx.fillStyle = '#D42B2B';
+    const legOffset = started && !gameOver ? (Math.floor(frameCount/4) % 2) * 6 : 0;
+    ctx.fillRect(dino.x+6, dino.y+32, 5, 8 + (legOffset ? 0 : 3));
+    ctx.fillRect(dino.x+16, dino.y+32, 5, 8 + (legOffset ? 3 : 0));
+    // Tail
+    ctx.fillRect(dino.x, dino.y+12, 6, 5);
+    // Arm
+    ctx.fillRect(dino.x+18, dino.y+18, 8, 3);
+
+    // Cacti
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    for (let c of cacti) {
+      ctx.fillRect(c.x, c.y, c.w, c.h);
+      // Cactus arms
+      ctx.fillRect(c.x-3, c.y+c.h*0.3, 4, 3);
+      ctx.fillRect(c.x+c.w-1, c.y+c.h*0.5, 4, 3);
+    }
+
+    // Score
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.font = '12px Inter, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(String(score).padStart(5,'0'), W-12, 20);
+    ctx.textAlign = 'left';
+
+    if (!started) {
+      ctx.fillStyle = 'rgba(255,255,255,0.4)';
+      ctx.font = '14px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Baslamak icin dokun veya SPACE', W/2, H/2);
+      ctx.textAlign = 'left';
+    }
+
+    if (gameOver) {
+      ctx.fillStyle = 'rgba(212,43,43,0.8)';
+      ctx.font = 'bold 18px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('GAME OVER', W/2, H/2 - 10);
+      ctx.fillStyle = 'rgba(255,255,255,0.4)';
+      ctx.font = '12px Inter, sans-serif';
+      ctx.fillText('Tekrar denemek icin dokun', W/2, H/2 + 14);
+      ctx.textAlign = 'left';
+    }
+  }
+
+  function loop() {
+    if (!started && !gameOver) { draw(); return; }
+    update(); draw();
+    if (!gameOver) animFrame = requestAnimationFrame(loop);
+  }
+
+  function start() {
+    document.getElementById('dino-section').style.display = 'block';
+    if (!canvas) init();
+    reset(); draw();
+  }
+
+  function stop() {
+    document.getElementById('dino-section').style.display = 'none';
+    if (animFrame) cancelAnimationFrame(animFrame);
+    gameOver = true;
+  }
+
+  return { start, stop, init };
+})();
 </script>
 </body>
 </html>
