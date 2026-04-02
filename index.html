@@ -446,6 +446,10 @@ window.addEventListener('popstate', (e) => {
 });
 
 // ============ FETCH SHEET DATA ============
+// Sabit sutun sirasi — header row bozulsa bile calismaya devam eder
+const COL_KEYS = ['No','Thumbnail','Video URL','Baslik','Kanal','Views','Likes','Comments','Engagement Rate','Format','Konu Kategorisi','Hook Skoru','Hook ve Icerik Analizi','Tam Transkript','Video Yapisi','Neden Viral','Kali Adaptasyonu','Kerem Icin Script','Oncelik','Produksiyon Notlari'];
+const NUMERIC_COLS = new Set(['Views','Likes','Comments','Hook Skoru']);
+
 async function fetchSheetData() {
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_TAB)}`;
   const resp = await fetch(url);
@@ -453,18 +457,16 @@ async function fetchSheetData() {
   const jsonStr = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]+)\);?/);
   if (!jsonStr) return [];
   const json = JSON.parse(jsonStr[1]);
-  const cols = json.table.cols.map(c => c.label || '');
   const rows = [];
   for (const row of json.table.rows) {
     const obj = {};
     row.c.forEach((cell, i) => {
-      if (!cell) { obj[cols[i]] = ''; return; }
-      // Use formatted value for display strings, raw value for numbers
-      const label = cols[i];
-      if (['Views','Likes','Comments','Hook Skoru'].includes(label)) {
-        obj[label] = cell.v || '';
+      const key = COL_KEYS[i] || `col_${i}`;
+      if (!cell) { obj[key] = ''; return; }
+      if (NUMERIC_COLS.has(key)) {
+        obj[key] = cell.v || '';
       } else {
-        obj[label] = cell.f || String(cell.v || '');
+        obj[key] = cell.f || String(cell.v || '');
       }
     });
     rows.push(obj);
@@ -511,9 +513,11 @@ function pollForResults(username, rowCountBefore) {
   const loadingBar = document.getElementById('loading-bar');
   const status = document.getElementById('form-status');
   const btn = document.getElementById('submit-btn');
+  const POLL_INTERVAL = 10000; // 10sn
+  const MAX_POLLS = 60; // 10dk max
   const interval = setInterval(async () => {
     polls++;
-    if (polls > 40) {
+    if (polls > MAX_POLLS) {
       clearInterval(interval);
       loadingBar.classList.remove('active');
       status.textContent = 'Zaman asimi. n8n workflow durumunu kontrol edin.';
@@ -521,36 +525,68 @@ function pollForResults(username, rowCountBefore) {
       btn.disabled = false; btn.textContent = 'Analiz Et';
       return;
     }
-    status.textContent = `@${username} analiz ediliyor... (${polls * 15}sn)`;
+    const elapsed = Math.floor(polls * POLL_INTERVAL / 1000);
+    const min = Math.floor(elapsed / 60);
+    const sec = elapsed % 60;
+    status.textContent = `@${username} analiz ediliyor... ${min > 0 ? min + 'dk ' : ''}${sec}sn`;
     try {
       const data = await fetchSheetData();
-      // Yeni satirlar eklenmis mi kontrol et (eski veriye takilma)
       if (data.length > rowCountBefore) {
-        // Yeni eklenen satirlarda bu username var mi?
         const newRows = data.slice(rowCountBefore);
         const hasNew = newRows.some(row => {
-          const kanal = String(row['Kanal'] || '').toLowerCase();
+          const kanal = String(row['Kanal'] || '').toLowerCase().replace(/^@/,'');
           return kanal.includes(username.toLowerCase());
         });
         if (hasNew) {
           clearInterval(interval);
           loadingBar.classList.remove('active');
-          status.textContent = `@${username} analizi tamamlandi!`;
+          status.textContent = `@${username} analizi tamamlandi! Asagida goruntuleyebilirsiniz.`;
           status.className = 'form-status success';
           btn.disabled = false; btn.textContent = 'Analiz Et';
+          lastRowCount = data.length;
           processData(data);
         }
       }
     } catch (e) {}
-  }, 15000);
+  }, POLL_INTERVAL);
 }
 
 // ============ LOAD / PROCESS DATA ============
+let lastRowCount = 0;
+let autoRefreshInterval = null;
+
 async function loadResults() {
   try {
     const data = await fetchSheetData();
+    lastRowCount = data.length;
     if (data.length > 0) processData(data);
-  } catch (e) {}
+    // Arka planda 30sn'de bir yeni veri kontrol et
+    startAutoRefresh();
+  } catch (e) { console.error('loadResults:', e); }
+}
+
+function startAutoRefresh() {
+  if (autoRefreshInterval) return;
+  autoRefreshInterval = setInterval(async () => {
+    try {
+      const data = await fetchSheetData();
+      if (data.length !== lastRowCount) {
+        lastRowCount = data.length;
+        const prevGroupCount = allGroups.length;
+        processData(data);
+        // Yeni analiz geldiyse bildirim goster
+        if (allGroups.length > prevGroupCount && activeGroupIdx < 0) {
+          const newest = allGroups[0];
+          const uname = newest.separator ? (newest.separator['Kanal'] || '').replace(/^@/,'') : '';
+          const status = document.getElementById('form-status');
+          if (status && uname) {
+            status.textContent = `@${uname} analizi tamamlandi! Asagida goruntuleyebilirsiniz.`;
+            status.className = 'form-status success';
+          }
+        }
+      }
+    } catch (e) {}
+  }, 30000);
 }
 
 function processData(data) {
