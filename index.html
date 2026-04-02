@@ -4,121 +4,220 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KALI. — Instagram Icerik Analiz</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--black:#000;--white:#fff;--red:#D42B2B;--gray-50:#f8f8f8;--gray-100:#f0f0f0;--gray-200:#e0e0e0;--gray-400:#999;--gray-600:#666;--gray-800:#222}
-body{font-family:'Inter',sans-serif;background:var(--black);color:var(--white);min-height:100vh;overflow-x:hidden}
+:root{
+  --black:#000;--white:#fff;--red:#D42B2B;
+  --surface-0:#0a0a0a;--surface-1:#111;--surface-2:#1a1a1a;--surface-3:#222;
+  --gray-400:#999;--gray-500:#777;--gray-600:#555;--gray-700:#333;
+  --radius-sm:8px;--radius-md:12px;--radius-lg:16px;
+  --ease:cubic-bezier(.4,0,.2,1)
+}
+body{font-family:'Inter',sans-serif;background:var(--black);color:var(--white);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
 
-/* PIN SCREEN */
+/* ============ PIN SCREEN ============ */
 #pin-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--black);position:fixed;top:0;left:0;width:100%;z-index:1000}
 .pin-container{text-align:center;max-width:360px;padding:40px}
-.pin-logo{font-family:'Playfair Display',serif;font-size:48px;font-weight:700;letter-spacing:4px;margin-bottom:8px}
-.pin-logo span{color:var(--red)}
+.pin-logo{margin-bottom:8px}
+.pin-logo img{width:200px;filter:invert(1)}
 .pin-subtitle{font-size:13px;color:var(--gray-400);letter-spacing:2px;text-transform:uppercase;margin-bottom:48px}
 .pin-input-wrap{display:flex;gap:8px;justify-content:center;margin-bottom:24px}
-.pin-digit{width:48px;height:56px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:var(--white);font-size:24px;text-align:center;font-family:'Inter',sans-serif;outline:none;transition:border-color .2s}
+.pin-digit{width:48px;height:56px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:var(--radius-sm);color:var(--white);font-size:24px;text-align:center;font-family:'Inter',sans-serif;outline:none;transition:border-color .2s var(--ease)}
 .pin-digit:focus{border-color:var(--red)}
 .pin-digit.filled{border-color:rgba(255,255,255,0.3)}
 .pin-error{color:var(--red);font-size:13px;min-height:20px;margin-bottom:16px}
-.pin-lockout{color:var(--red);font-size:14px;font-weight:500}
-.pin-btn{width:100%;padding:14px;background:var(--red);color:var(--white);border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;letter-spacing:1px;transition:opacity .2s}
+.pin-btn{width:100%;padding:14px;background:var(--red);color:var(--white);border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:600;cursor:pointer;letter-spacing:1px;transition:opacity .2s var(--ease)}
 .pin-btn:hover{opacity:.9}
+.pin-btn:active{opacity:.8}
 .pin-btn:disabled{opacity:.4;cursor:not-allowed}
 
-/* MAIN APP */
-#app{display:none}
-
-/* HEADER */
-.header{background:var(--black);border-bottom:1px solid rgba(255,255,255,0.08);padding:20px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-.header-logo{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;letter-spacing:3px}
-.header-logo span{color:var(--red)}
-.header-right{display:flex;align-items:center;gap:16px}
-.daily-counter{font-size:12px;color:var(--gray-400);background:rgba(255,255,255,0.06);padding:6px 14px;border-radius:20px}
+/* ============ HEADER ============ */
+.header{background:rgba(0,0,0,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.06);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.header-logo img{height:32px;filter:invert(1)}
+.header-right{display:flex;align-items:center;gap:12px}
+.daily-counter{font-size:11px;color:var(--gray-400);background:rgba(255,255,255,0.06);padding:5px 12px;border-radius:20px}
 .daily-counter b{color:var(--white)}
-.logout-btn{background:none;border:1px solid rgba(255,255,255,0.15);color:var(--gray-400);padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;transition:all .2s}
+.logout-btn{background:none;border:1px solid rgba(255,255,255,0.12);color:var(--gray-400);padding:5px 12px;border-radius:20px;font-size:11px;cursor:pointer;transition:all .2s var(--ease)}
 .logout-btn:hover{border-color:var(--red);color:var(--red)}
 
-/* FORM SECTION */
-.form-section{max-width:640px;margin:60px auto;padding:0 24px;text-align:center}
-.form-title{font-family:'Playfair Display',serif;font-size:32px;font-weight:700;margin-bottom:8px}
-.form-desc{color:var(--gray-400);font-size:14px;margin-bottom:36px;line-height:1.6}
-.input-group{display:flex;gap:12px;margin-bottom:16px}
-.input-field{flex:1;padding:14px 18px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:var(--white);font-size:15px;font-family:'Inter',sans-serif;outline:none;transition:border-color .2s}
+/* ============ SCREENS ============ */
+#app{display:none}
+.screen{display:none}
+.screen.active{display:block}
+
+/* ============ SCREEN 1: DASHBOARD ============ */
+.form-section{max-width:560px;margin:48px auto 40px;padding:0 20px;text-align:center}
+.form-title{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;margin-bottom:6px;letter-spacing:-0.02em}
+.form-desc{color:var(--gray-500);font-size:13px;margin-bottom:28px;line-height:1.6}
+.input-group{display:flex;gap:10px;margin-bottom:12px}
+.input-field{flex:1;padding:13px 16px;background:var(--surface-1);border:1px solid rgba(255,255,255,0.08);border-radius:var(--radius-sm);color:var(--white);font-size:14px;font-family:'Inter',sans-serif;outline:none;transition:border-color .2s var(--ease)}
 .input-field:focus{border-color:var(--red)}
 .input-field::placeholder{color:var(--gray-600)}
-.submit-btn{padding:14px 32px;background:var(--red);color:var(--white);border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;letter-spacing:.5px;transition:all .2s;white-space:nowrap}
+.submit-btn{padding:13px 28px;background:var(--red);color:var(--white);border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;letter-spacing:.3px;transition:all .2s var(--ease);white-space:nowrap}
 .submit-btn:hover{opacity:.9;transform:translateY(-1px)}
+.submit-btn:active{transform:translateY(0)}
 .submit-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
-.form-status{margin-top:16px;font-size:13px;color:var(--gray-400);min-height:20px}
+.form-status{margin-top:12px;font-size:12px;color:var(--gray-400);min-height:18px}
 .form-status.error{color:var(--red)}
 .form-status.success{color:#4ade80}
-
-/* LOADING */
-.loading-bar{width:100%;height:3px;background:rgba(255,255,255,0.06);position:relative;overflow:hidden;border-radius:2px;margin-top:20px;display:none}
+.loading-bar{width:100%;height:3px;background:rgba(255,255,255,0.04);position:relative;overflow:hidden;border-radius:2px;margin-top:16px;display:none}
 .loading-bar.active{display:block}
 .loading-bar::after{content:'';position:absolute;top:0;left:-40%;width:40%;height:100%;background:linear-gradient(90deg,transparent,var(--red),transparent);animation:loading 1.5s infinite}
 @keyframes loading{0%{left:-40%}100%{left:100%}}
 
-/* RESULTS */
-.results-section{max-width:1200px;margin:0 auto;padding:0 24px 60px}
-.results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.08)}
-.results-title{font-family:'Playfair Display',serif;font-size:24px}
-.results-count{font-size:13px;color:var(--gray-400)}
-.results-filters{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap}
-.filter-btn{padding:6px 16px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:20px;color:var(--gray-400);font-size:12px;cursor:pointer;transition:all .2s}
-.filter-btn:hover,.filter-btn.active{background:var(--red);border-color:var(--red);color:var(--white)}
+/* HISTORY SECTION */
+.history-section{max-width:720px;margin:0 auto;padding:0 20px 60px}
+.history-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.history-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700}
+.history-count{font-size:12px;color:var(--gray-500)}
 
-/* CARD GRID */
-.card-grid{display:grid;grid-template-columns:1fr;gap:16px}
-.card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;overflow:hidden;transition:all .3s}
-.card:hover{border-color:rgba(212,43,43,0.3);transform:translateY(-2px);box-shadow:0 8px 32px rgba(212,43,43,0.08)}
-.card-top{display:grid;grid-template-columns:1fr 1fr;gap:0}
-.card-video{position:relative;aspect-ratio:9/16;max-height:280px;background:var(--gray-800);overflow:hidden}
-.card-video iframe{width:100%;height:100%;border:none}
-.card-video .placeholder{display:flex;align-items:center;justify-content:center;height:100%;color:var(--gray-600);font-size:13px;flex-direction:column;gap:8px}
-.card-video .placeholder a{color:var(--red);text-decoration:none;font-weight:500;font-size:12px}
-.card-meta{padding:20px;display:flex;flex-direction:column;gap:12px}
-.card-channel{font-size:11px;color:var(--red);font-weight:600;letter-spacing:1px;text-transform:uppercase}
-.card-title{font-size:14px;font-weight:500;line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.card-stats{display:flex;gap:12px;flex-wrap:wrap}
-.stat{font-size:11px;color:var(--gray-400)}
-.stat b{color:var(--white);font-weight:600}
-.card-badges{display:flex;gap:6px;flex-wrap:wrap}
-.badge{padding:3px 10px;border-radius:12px;font-size:10px;font-weight:600;letter-spacing:.5px}
-.badge-high{background:rgba(212,43,43,0.15);color:var(--red)}
-.badge-medium{background:rgba(255,200,50,0.15);color:#ffc832}
-.badge-low{background:rgba(74,222,128,0.12);color:#4ade80}
-.badge-category{background:rgba(255,255,255,0.06);color:var(--gray-400)}
-.badge-hook{background:rgba(212,43,43,0.1);color:var(--red)}
+/* ANALYSIS PROFILE CARD */
+.analysis-card{background:var(--surface-1);border:1px solid rgba(255,255,255,0.06);border-radius:var(--radius-md);padding:20px;margin-bottom:12px;cursor:pointer;transition:all .25s var(--ease);display:flex;align-items:center;justify-content:space-between;gap:16px}
+.analysis-card:hover{border-color:rgba(212,43,43,0.3);background:var(--surface-2);transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+.analysis-card:active{transform:translateY(0)}
+.ac-left{display:flex;align-items:center;gap:16px;min-width:0}
+.ac-avatar{width:48px;height:48px;border-radius:50%;background:var(--surface-3);border:2px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:var(--red);flex-shrink:0;font-family:'Playfair Display',serif}
+.ac-info{min-width:0}
+.ac-username{font-size:15px;font-weight:600;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ac-meta{font-size:12px;color:var(--gray-500);display:flex;gap:12px;flex-wrap:wrap}
+.ac-meta span{display:flex;align-items:center;gap:4px}
+.ac-arrow{color:var(--gray-600);font-size:18px;flex-shrink:0;transition:transform .2s var(--ease)}
+.analysis-card:hover .ac-arrow{transform:translateX(4px);color:var(--red)}
 
-/* CARD BODY */
-.card-body{padding:0 20px 20px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.card-section{background:rgba(255,255,255,0.02);border-radius:8px;padding:14px}
-.card-section-title{font-size:10px;color:var(--red);font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px}
-.card-section-text{font-size:12px;color:var(--gray-400);line-height:1.7}
-.card-section.full-width{grid-column:1/-1}
-.card-section.script{background:rgba(212,43,43,0.04);border:1px solid rgba(212,43,43,0.1)}
-.card-section.script .card-section-text{color:var(--white);font-size:13px}
+.empty-state{text-align:center;padding:60px 20px;color:var(--gray-600)}
+.empty-state p{font-size:14px;margin-top:8px}
 
-/* SEPARATOR ROW */
-.separator{background:var(--red);padding:12px 20px;border-radius:8px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
-.separator-text{font-weight:700;font-size:14px;letter-spacing:1px}
-.separator-date{font-size:12px;opacity:.8}
+/* ============ SCREEN 2: ACCOUNT ANALYSIS ============ */
+.account-header{max-width:1080px;margin:0 auto;padding:24px 20px 0}
+.back-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:var(--surface-1);border:1px solid rgba(255,255,255,0.08);border-radius:var(--radius-sm);color:var(--gray-400);font-size:13px;cursor:pointer;transition:all .2s var(--ease);margin-bottom:20px}
+.back-btn:hover{border-color:var(--red);color:var(--white)}
+.account-info{display:flex;align-items:center;gap:16px;margin-bottom:24px}
+.account-avatar{width:56px;height:56px;border-radius:50%;background:var(--surface-2);border:2px solid var(--red);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:var(--red);font-family:'Playfair Display',serif}
+.account-name{font-family:'Playfair Display',serif;font-size:24px;font-weight:700}
+.account-date{font-size:12px;color:var(--gray-500);margin-top:2px}
 
-/* EXPAND/COLLAPSE */
-.card-toggle{width:100%;padding:10px;background:none;border:none;border-top:1px solid rgba(255,255,255,0.06);color:var(--gray-400);font-size:12px;cursor:pointer;transition:color .2s}
-.card-toggle:hover{color:var(--white)}
-.card-body.collapsed{display:none}
+/* FILTERS */
+.filters-row{max-width:1080px;margin:0 auto;padding:0 20px;display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+.filter-pill{padding:6px 14px;background:var(--surface-1);border:1px solid rgba(255,255,255,0.08);border-radius:20px;color:var(--gray-400);font-size:11px;font-weight:500;cursor:pointer;transition:all .2s var(--ease)}
+.filter-pill:hover,.filter-pill.active{background:var(--red);border-color:var(--red);color:var(--white)}
 
-/* MOBILE */
-@media(max-width:768px){
-  .card-top{grid-template-columns:1fr}
-  .card-body{grid-template-columns:1fr}
+/* VIDEO CARD GRID */
+.video-grid{max-width:1080px;margin:0 auto;padding:0 20px 60px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+
+.video-card{background:var(--surface-1);border:1px solid rgba(255,255,255,0.06);border-radius:var(--radius-lg);overflow:hidden;transition:all .25s var(--ease);cursor:pointer}
+.video-card:hover{border-color:rgba(212,43,43,0.25);transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,0.4)}
+.video-card:active{transform:translateY(-1px)}
+
+.vc-thumb{position:relative;aspect-ratio:16/9;background:var(--surface-3);overflow:hidden}
+.vc-thumb img{width:100%;height:100%;object-fit:cover;transition:transform .3s var(--ease)}
+.video-card:hover .vc-thumb img{transform:scale(1.05)}
+.vc-thumb-placeholder{display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:var(--gray-600);font-size:12px}
+.vc-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:48px;height:48px;background:rgba(212,43,43,0.9);border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s var(--ease)}
+.video-card:hover .vc-play{opacity:1}
+.vc-play svg{width:20px;height:20px;fill:white;margin-left:3px}
+.vc-priority{position:absolute;top:10px;right:10px;padding:3px 10px;border-radius:10px;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+.vc-priority.high{background:rgba(212,43,43,0.9);color:white}
+.vc-priority.medium{background:rgba(255,200,50,0.9);color:#000}
+.vc-priority.low{background:rgba(74,222,128,0.9);color:#000}
+
+.vc-body{padding:14px 16px 16px}
+.vc-channel{font-size:11px;color:var(--red);font-weight:600;letter-spacing:.5px;margin-bottom:4px}
+.vc-title{font-size:13px;font-weight:500;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:10px;min-height:39px}
+.vc-stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.vc-stat{font-size:11px;color:var(--gray-500)}
+.vc-stat b{color:var(--white);font-weight:600}
+.vc-tags{display:flex;gap:5px;flex-wrap:wrap}
+.vc-tag{padding:3px 8px;border-radius:10px;font-size:10px;font-weight:500}
+.vc-tag.category{background:rgba(255,255,255,0.06);color:var(--gray-400)}
+.vc-tag.hook{background:rgba(212,43,43,0.1);color:var(--red)}
+.vc-detail-btn{display:block;width:100%;padding:10px;background:none;border:none;border-top:1px solid rgba(255,255,255,0.06);color:var(--gray-500);font-size:12px;font-weight:500;cursor:pointer;transition:color .2s var(--ease)}
+.vc-detail-btn:hover{color:var(--white)}
+
+/* ============ SCREEN 3: VIDEO DETAIL MODAL ============ */
+.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:200;display:none;justify-content:center;align-items:flex-start;overflow-y:auto;padding:40px 20px}
+.modal-overlay.active{display:flex}
+body.modal-open{overflow:hidden}
+
+.modal{background:var(--surface-0);border:1px solid rgba(255,255,255,0.08);border-radius:var(--radius-lg);max-width:720px;width:100%;margin:0 auto;overflow:hidden;animation:modalIn .3s var(--ease)}
+@keyframes modalIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+.modal-top{position:relative}
+.modal-close{position:absolute;top:12px;left:12px;z-index:5;width:36px;height:36px;background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:none;border-radius:50%;color:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s var(--ease)}
+.modal-close:hover{background:var(--red)}
+.modal-ig-link{position:absolute;bottom:12px;right:12px;z-index:5;padding:8px 16px;background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:20px;color:white;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;transition:background .2s var(--ease)}
+.modal-ig-link:hover{background:var(--red)}
+.modal-thumb{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:var(--surface-3)}
+.modal-thumb-placeholder{width:100%;aspect-ratio:16/9;background:var(--surface-3);display:flex;align-items:center;justify-content:center;color:var(--gray-600)}
+
+.modal-header{padding:20px 24px 16px}
+.modal-channel{font-size:12px;color:var(--red);font-weight:600;letter-spacing:.5px;margin-bottom:6px}
+.modal-title{font-size:18px;font-weight:600;line-height:1.5;margin-bottom:12px}
+.modal-stats{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.modal-stat{font-size:13px;color:var(--gray-500)}
+.modal-stat b{color:var(--white)}
+.modal-badges{display:flex;gap:6px;flex-wrap:wrap}
+.m-badge{padding:4px 12px;border-radius:12px;font-size:11px;font-weight:600;letter-spacing:.3px}
+.m-badge.high{background:rgba(212,43,43,0.15);color:var(--red)}
+.m-badge.medium{background:rgba(255,200,50,0.15);color:#ffc832}
+.m-badge.low{background:rgba(74,222,128,0.12);color:#4ade80}
+.m-badge.cat{background:rgba(255,255,255,0.06);color:var(--gray-400)}
+.m-badge.hook{background:rgba(212,43,43,0.1);color:var(--red)}
+
+/* MODAL SECTIONS */
+.modal-sections{padding:0 24px 24px}
+.m-divider{display:flex;align-items:center;gap:12px;margin:24px 0 16px}
+.m-divider-line{flex:1;height:1px;background:rgba(255,255,255,0.08)}
+.m-divider-text{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--red)}
+.m-section{background:var(--surface-1);border:1px solid rgba(255,255,255,0.04);border-radius:var(--radius-md);padding:16px 18px;margin-bottom:12px}
+.m-section-title{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray-500);margin-bottom:10px}
+.m-section-text{font-size:13px;color:rgba(255,255,255,0.75);line-height:1.8;white-space:pre-wrap}
+.m-section.script{background:rgba(212,43,43,0.04);border-color:rgba(212,43,43,0.12);border-left:3px solid var(--red)}
+.m-section.script .m-section-title{color:var(--red)}
+.m-section.script .m-section-text{color:var(--white);font-size:14px}
+.m-section.transcript{cursor:pointer}
+.m-section.transcript .m-section-text{display:none;font-style:italic;opacity:.6;font-size:12px}
+.m-section.transcript.open .m-section-text{display:block}
+.m-section.transcript .m-section-title::after{content:' ▼';font-size:8px}
+.m-section.transcript.open .m-section-title::after{content:' ▲'}
+
+/* ============ RESPONSIVE ============ */
+@media(max-width:480px){
+  .header{padding:12px 16px}
+  .header-logo img{height:26px}
+  .form-section{margin:32px auto 28px}
+  .form-title{font-size:22px}
+  .form-desc{font-size:12px;margin-bottom:20px}
   .input-group{flex-direction:column}
-  .header{padding:16px 20px}
-  .form-section{margin:40px auto}
-  .form-title{font-size:24px}
+  .submit-btn{width:100%}
+  .analysis-card{padding:16px}
+  .ac-avatar{width:40px;height:40px;font-size:16px}
+  .ac-username{font-size:14px}
+  .ac-meta{font-size:11px}
+  .video-grid{grid-template-columns:1fr;gap:12px}
+  .modal-overlay{padding:0}
+  .modal{border-radius:0;min-height:100vh}
+  .modal-header{padding:16px}
+  .modal-sections{padding:0 16px 16px}
+  .modal-title{font-size:16px}
+  .account-header{padding:16px 16px 0}
+  .account-name{font-size:20px}
+  .filters-row{padding:0 16px}
+  .video-grid{padding:0 16px 40px}
+}
+@media(min-width:481px) and (max-width:768px){
+  .video-grid{grid-template-columns:repeat(2,1fr)}
+  .input-group{flex-direction:column}
+  .submit-btn{width:100%}
+}
+@media(min-width:769px){
+  .header{padding:16px 32px}
+  .form-section{margin:56px auto 44px}
+  .form-title{font-size:32px}
+  .history-section{max-width:760px}
+  .video-grid{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+  .modal-overlay{padding:60px 20px}
 }
 </style>
 </head>
@@ -127,7 +226,7 @@ body{font-family:'Inter',sans-serif;background:var(--black);color:var(--white);m
 <!-- PIN SCREEN -->
 <div id="pin-screen">
   <div class="pin-container">
-    <div class="pin-logo">KALI<span>.</span></div>
+    <div class="pin-logo"><img src="kali_logo.png" alt="Kali."></div>
     <div class="pin-subtitle">Sosyal Medya Analiz</div>
     <div class="pin-input-wrap">
       <input class="pin-digit" type="password" maxlength="1" inputmode="numeric" autofocus>
@@ -145,36 +244,75 @@ body{font-family:'Inter',sans-serif;background:var(--black);color:var(--white);m
 <!-- MAIN APP -->
 <div id="app">
   <header class="header">
-    <div class="header-logo">KALI<span>.</span></div>
+    <div class="header-logo"><img src="kali_logo.png" alt="Kali."></div>
     <div class="header-right">
-      <div class="daily-counter">Bugun: <b id="daily-count">0</b>/3 analiz</div>
+      <div class="daily-counter">Bugun: <b id="daily-count">0</b>/3</div>
       <button class="logout-btn" onclick="logout()">Cikis</button>
     </div>
   </header>
 
-  <div class="form-section">
-    <div class="form-title">Instagram Analiz</div>
-    <div class="form-desc">Analiz etmek istediginiz hesabin Instagram linkini yapistirin.<br>Viral videolar taranacak, transkript cikarilacak ve icerik onerileri uretilecek.</div>
-    <div class="input-group">
-      <input class="input-field" id="ig-input" type="text" placeholder="ornek: https://www.instagram.com/ryanserhant/">
-      <button class="submit-btn" id="submit-btn" onclick="startAnalysis()">Analizi Baslat</button>
+  <!-- SCREEN 1: Dashboard -->
+  <div class="screen active" id="screen-dashboard">
+    <div class="form-section">
+      <div class="form-title">Instagram Icerik Analiz</div>
+      <div class="form-desc">Rakip hesabin linkini yapistirin. Viral videolar analiz edilecek ve Kerem icin icerik onerileri uretilecek.</div>
+      <div class="input-group">
+        <input class="input-field" id="ig-input" type="text" placeholder="instagram.com/ryanserhant veya @ryanserhant">
+        <button class="submit-btn" id="submit-btn" onclick="startAnalysis()">Analiz Et</button>
+      </div>
+      <div class="form-status" id="form-status"></div>
+      <div class="loading-bar" id="loading-bar"></div>
     </div>
-    <div class="form-status" id="form-status"></div>
-    <div class="loading-bar" id="loading-bar"></div>
+
+    <div class="history-section" id="history-section" style="display:none">
+      <div class="history-header">
+        <div class="history-title">Gecmis Analizler</div>
+        <div class="history-count" id="history-count"></div>
+      </div>
+      <div id="history-list"></div>
+    </div>
   </div>
 
-  <div class="results-section" id="results-section" style="display:none">
-    <div class="results-header">
-      <div class="results-title">Analiz Sonuclari</div>
-      <div class="results-count" id="results-count"></div>
+  <!-- SCREEN 2: Account Analysis (Video Grid) -->
+  <div class="screen" id="screen-account">
+    <div class="account-header">
+      <button class="back-btn" onclick="showDashboard()">&#8592; Geri</button>
+      <div class="account-info">
+        <div class="account-avatar" id="acc-avatar"></div>
+        <div>
+          <div class="account-name" id="acc-name"></div>
+          <div class="account-date" id="acc-date"></div>
+        </div>
+      </div>
     </div>
-    <div class="results-filters" id="results-filters"></div>
-    <div id="card-container"></div>
+    <div class="filters-row" id="acc-filters"></div>
+    <div class="video-grid" id="video-grid"></div>
+  </div>
+</div>
+
+<!-- VIDEO DETAIL MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modal">
+    <div class="modal-top">
+      <button class="modal-close" onclick="closeModal()">&#10005;</button>
+      <a class="modal-ig-link" id="modal-ig-link" href="#" target="_blank" rel="noopener">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+        Instagram'da Izle
+      </a>
+      <div id="modal-thumb-container"></div>
+    </div>
+    <div class="modal-header">
+      <div class="modal-channel" id="modal-channel"></div>
+      <div class="modal-title" id="modal-title"></div>
+      <div class="modal-stats" id="modal-stats"></div>
+      <div class="modal-badges" id="modal-badges"></div>
+    </div>
+    <div class="modal-sections" id="modal-sections"></div>
   </div>
 </div>
 
 <script>
-// CONFIG
+// ============ CONFIG ============
 const PIN_HASH = '592f541a1e5f4fccd1460ba5eec2bdb42ca41f90207d4a84fb80eca9aaf92b39';
 const WEBHOOK_URL = 'https://n8n.srv1193133.hstgr.cloud/webhook/kali-analiz-api';
 const WEBHOOK_SECRET = 'kali_sec_2026_xR9m';
@@ -182,17 +320,20 @@ const SHEET_ID = '1LxfaMycxFxfC0OZNiEIXUmjVo4zbtDgRAPNPqxf1sZg';
 const SHEET_TAB = 'Analiz';
 const MAX_DAILY = 3;
 const LOCKOUT_MS = 5 * 60 * 1000;
+const PLACEHOLDER_THUMB = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" fill="%23222"><rect width="640" height="360"/><text x="50%" y="50%" fill="%23555" font-family="sans-serif" font-size="14" text-anchor="middle" dy=".3em">Gorsel Yok</text></svg>');
 
 let attempts = 0;
 let lockoutUntil = 0;
+let allGroups = [];
+let activeGroupIdx = -1;
 
-// SHA-256 hash
+// ============ SHA-256 ============
 async function sha256(msg) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg));
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// PIN LOGIC
+// ============ PIN ============
 const pinDigits = document.querySelectorAll('.pin-digit');
 pinDigits.forEach((el, i) => {
   el.addEventListener('input', () => {
@@ -208,14 +349,11 @@ pinDigits.forEach((el, i) => {
 async function checkPin() {
   const now = Date.now();
   if (now < lockoutUntil) {
-    const secs = Math.ceil((lockoutUntil - now) / 1000);
-    document.getElementById('pin-error').textContent = `Cok fazla deneme. ${secs}sn bekleyin.`;
+    document.getElementById('pin-error').textContent = `Cok fazla deneme. ${Math.ceil((lockoutUntil - now) / 1000)}sn bekleyin.`;
     return;
   }
-
   const pin = Array.from(pinDigits).map(el => el.value).join('');
   if (pin.length < 6) return;
-
   const hash = await sha256(pin);
   if (hash === PIN_HASH) {
     attempts = 0;
@@ -228,336 +366,376 @@ async function checkPin() {
     attempts++;
     pinDigits.forEach(el => { el.value = ''; el.classList.remove('filled'); });
     pinDigits[0].focus();
-
     if (attempts >= 3) {
       lockoutUntil = now + LOCKOUT_MS;
       document.getElementById('pin-error').textContent = '3 yanlis deneme. 5 dakika beklemelisiniz.';
       document.getElementById('pin-btn').disabled = true;
-      setTimeout(() => {
-        document.getElementById('pin-btn').disabled = false;
-        document.getElementById('pin-error').textContent = '';
-        attempts = 0;
-      }, LOCKOUT_MS);
+      setTimeout(() => { document.getElementById('pin-btn').disabled = false; document.getElementById('pin-error').textContent = ''; attempts = 0; }, LOCKOUT_MS);
     } else {
       document.getElementById('pin-error').textContent = `Yanlis PIN. ${3 - attempts} deneme hakkiniz kaldi.`;
     }
   }
 }
 
-// SESSION CHECK
+// ============ SESSION ============
 if (sessionStorage.getItem('kali_auth') === '1') {
   document.getElementById('pin-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
   updateDailyCounter();
   loadResults();
 }
+function logout() { sessionStorage.removeItem('kali_auth'); location.reload(); }
 
-function logout() {
-  sessionStorage.removeItem('kali_auth');
-  location.reload();
-}
+// ============ DAILY LIMIT ============
+function getDailyKey() { const d = new Date(); return `kali_daily_${d.getFullYear()}_${d.getMonth()}_${d.getDate()}`; }
+function getDailyCount() { return parseInt(localStorage.getItem(getDailyKey()) || '0'); }
+function incrementDaily() { localStorage.setItem(getDailyKey(), getDailyCount() + 1); updateDailyCounter(); }
+function updateDailyCounter() { document.getElementById('daily-count').textContent = getDailyCount(); }
 
-// DAILY LIMIT
-function getDailyKey() {
-  const d = new Date();
-  return `kali_daily_${d.getFullYear()}_${d.getMonth()}_${d.getDate()}`;
-}
-
-function getDailyCount() {
-  return parseInt(localStorage.getItem(getDailyKey()) || '0');
-}
-
-function incrementDaily() {
-  const count = getDailyCount() + 1;
-  localStorage.setItem(getDailyKey(), count);
-  updateDailyCounter();
-}
-
-function updateDailyCounter() {
-  document.getElementById('daily-count').textContent = getDailyCount();
-}
-
-// PARSE USERNAME
+// ============ UTILS ============
 function parseUsername(input) {
   let u = input.trim();
-  if (u.includes('instagram.com')) {
-    const parts = u.split('instagram.com/');
-    u = parts[parts.length - 1];
-  }
+  if (u.includes('instagram.com')) u = u.split('instagram.com/').pop();
   return u.replace(/^@/, '').replace(/\/.*$/, '').replace(/\?.*$/, '').trim();
 }
+function formatNum(n) {
+  const num = parseInt(n) || 0;
+  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+  if (num >= 1000) return Math.round(num / 1000) + 'K';
+  return num.toString();
+}
+function getInitial(name) { return (name || '?')[0].toUpperCase(); }
 
-// START ANALYSIS
+// ============ NAVIGATION ============
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+function showDashboard() {
+  activeGroupIdx = -1;
+  showScreen('screen-dashboard');
+  history.pushState({ screen: 'dashboard' }, '');
+}
+function showAccount(groupIdx) {
+  activeGroupIdx = groupIdx;
+  const group = allGroups[groupIdx];
+  if (!group) return;
+  const username = group.separator ? (group.separator['Kanal'] || '') : 'Bilinmeyen';
+  const dateText = group.separator ? (group.separator['Baslik'] || '') : '';
+
+  document.getElementById('acc-avatar').textContent = getInitial(username);
+  document.getElementById('acc-name').textContent = '@' + username;
+  document.getElementById('acc-date').textContent = dateText;
+
+  renderVideoGrid(group.items);
+  showScreen('screen-account');
+  history.pushState({ screen: 'account', idx: groupIdx }, '');
+}
+
+window.addEventListener('popstate', (e) => {
+  const overlay = document.getElementById('modal-overlay');
+  if (overlay.classList.contains('active')) {
+    closeModal(true);
+    return;
+  }
+  if (activeGroupIdx >= 0) {
+    showDashboard();
+  }
+});
+
+// ============ FETCH SHEET DATA ============
+async function fetchSheetData() {
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_TAB)}`;
+  const resp = await fetch(url);
+  const text = await resp.text();
+  const jsonStr = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]+)\);?/);
+  if (!jsonStr) return [];
+  const json = JSON.parse(jsonStr[1]);
+  const cols = json.table.cols.map(c => c.label || '');
+  const rows = [];
+  for (const row of json.table.rows) {
+    const obj = {};
+    row.c.forEach((cell, i) => { obj[cols[i]] = cell ? (cell.v || '') : ''; });
+    rows.push(obj);
+  }
+  return rows;
+}
+
+// ============ START ANALYSIS ============
 async function startAnalysis() {
   const input = document.getElementById('ig-input').value;
   const username = parseUsername(input);
   const status = document.getElementById('form-status');
   const btn = document.getElementById('submit-btn');
   const loadingBar = document.getElementById('loading-bar');
-
-  if (!username) {
-    status.textContent = 'Gecerli bir Instagram hesap linki girin.';
-    status.className = 'form-status error';
-    return;
-  }
-
-  if (getDailyCount() >= MAX_DAILY) {
-    status.textContent = 'Gunluk analiz limitine ulastiniz (3/3). Yarin tekrar deneyin.';
-    status.className = 'form-status error';
-    return;
-  }
-
+  if (!username) { status.textContent = 'Gecerli bir Instagram hesap linki girin.'; status.className = 'form-status error'; return; }
+  if (getDailyCount() >= MAX_DAILY) { status.textContent = 'Gunluk limit doldu (3/3). Yarin tekrar deneyin.'; status.className = 'form-status error'; return; }
   btn.disabled = true;
-  btn.textContent = 'Analiz Baslatiliyor...';
-  status.textContent = `@${username} hesabi analiz ediliyor. Bu islem 3-8 dakika surebilir.`;
+  btn.textContent = 'Baslatiliyor...';
+  status.textContent = `@${username} analiz ediliyor. Bu islem 3-8 dk surebilir.`;
   status.className = 'form-status';
   loadingBar.classList.add('active');
-
   try {
-    const resp = await fetch(WEBHOOK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, secret: WEBHOOK_SECRET })
-    });
-
+    const resp = await fetch(WEBHOOK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, secret: WEBHOOK_SECRET }) });
     if (!resp.ok) throw new Error('Webhook hatasi');
-
     incrementDaily();
-    status.textContent = `@${username} analizi baslatildi! Sonuclar 3-8 dk icinde asagida gorunecek.`;
+    status.textContent = `@${username} analizi baslatildi! Sonuclar asagida gorunecek.`;
     status.className = 'form-status success';
-
-    // Poll for results
     pollForResults(username);
   } catch (e) {
     status.textContent = 'Bir hata olustu. Lutfen tekrar deneyin.';
     status.className = 'form-status error';
-  } finally {
     btn.disabled = false;
-    btn.textContent = 'Analizi Baslat';
+    btn.textContent = 'Analiz Et';
   }
 }
 
-// POLL FOR NEW RESULTS
 function pollForResults(username) {
   let polls = 0;
-  const maxPolls = 40; // 40 x 15s = 10 min max
   const loadingBar = document.getElementById('loading-bar');
   const status = document.getElementById('form-status');
-
+  const btn = document.getElementById('submit-btn');
   const interval = setInterval(async () => {
     polls++;
-    if (polls > maxPolls) {
+    if (polls > 40) {
       clearInterval(interval);
       loadingBar.classList.remove('active');
-      status.textContent = 'Analiz tamamlanamadi. Lutfen n8n workflow durumunu kontrol edin.';
+      status.textContent = 'Zaman asimi. n8n workflow durumunu kontrol edin.';
       status.className = 'form-status error';
+      btn.disabled = false; btn.textContent = 'Analiz Et';
       return;
     }
-
     try {
       const data = await fetchSheetData();
-      // Check if username appears in recent rows
       const hasNew = data.some(row => row['Kanal'] && row['Kanal'].toLowerCase().includes(username.toLowerCase()));
       if (hasNew) {
         clearInterval(interval);
         loadingBar.classList.remove('active');
         status.textContent = `@${username} analizi tamamlandi!`;
         status.className = 'form-status success';
-        renderResults(data);
+        btn.disabled = false; btn.textContent = 'Analiz Et';
+        processData(data);
       }
-    } catch (e) { /* keep polling */ }
+    } catch (e) {}
   }, 15000);
 }
 
-// FETCH SHEET DATA
-async function fetchSheetData() {
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_TAB)}`;
-  const resp = await fetch(url);
-  const text = await resp.text();
-  // Google returns JSONP-like response
-  const jsonStr = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]+)\);?/);
-  if (!jsonStr) return [];
-
-  const json = JSON.parse(jsonStr[1]);
-  const cols = json.table.cols.map(c => c.label || '');
-  const rows = [];
-
-  for (const row of json.table.rows) {
-    const obj = {};
-    row.c.forEach((cell, i) => {
-      obj[cols[i]] = cell ? (cell.v || '') : '';
-    });
-    rows.push(obj);
-  }
-  return rows;
-}
-
-// LOAD EXISTING RESULTS
+// ============ LOAD / PROCESS DATA ============
 async function loadResults() {
   try {
     const data = await fetchSheetData();
-    if (data.length > 0) renderResults(data);
-  } catch (e) { /* silent */ }
+    if (data.length > 0) processData(data);
+  } catch (e) {}
 }
 
-// RENDER RESULTS
-function renderResults(data) {
-  const section = document.getElementById('results-section');
-  const container = document.getElementById('card-container');
-  const countEl = document.getElementById('results-count');
-  const filtersEl = document.getElementById('results-filters');
-  section.style.display = 'block';
-
-  // Group by separator rows (No === '>>')
-  const groups = [];
+function processData(data) {
+  allGroups = [];
   let currentGroup = null;
-
   for (const row of data) {
     if (String(row['No']).trim() === '>>') {
       currentGroup = { separator: row, items: [] };
-      groups.push(currentGroup);
+      allGroups.push(currentGroup);
     } else if (currentGroup && row['No']) {
       currentGroup.items.push(row);
     } else if (!currentGroup && row['No']) {
-      // Items without separator (old data)
-      if (!groups.length || groups[groups.length - 1].separator) {
-        groups.push({ separator: null, items: [] });
+      if (!allGroups.length || allGroups[allGroups.length - 1].separator) {
+        allGroups.push({ separator: null, items: [] });
       }
-      groups[groups.length - 1].items.push(row);
+      allGroups[allGroups.length - 1].items.push(row);
     }
   }
+  allGroups.reverse();
+  renderHistory();
+}
 
-  // Reverse groups to show newest first
-  groups.reverse();
+// ============ RENDER HISTORY (Screen 1) ============
+function renderHistory() {
+  const section = document.getElementById('history-section');
+  const list = document.getElementById('history-list');
+  const countEl = document.getElementById('history-count');
+  if (allGroups.length === 0) {
+    section.style.display = 'block';
+    list.innerHTML = '<div class="empty-state"><div style="font-size:32px;margin-bottom:8px">&#128270;</div><p>Henuz analiz yapilmadi. Yukaridaki formdan baslayin.</p></div>';
+    countEl.textContent = '';
+    return;
+  }
+  section.style.display = 'block';
+  countEl.textContent = allGroups.length + ' analiz';
+  list.innerHTML = '';
+  allGroups.forEach((group, idx) => {
+    const username = group.separator ? (group.separator['Kanal'] || 'Bilinmeyen') : 'Bilinmeyen';
+    const dateText = group.separator ? (group.separator['Baslik'] || '') : '';
+    const videoCount = group.items.length;
+    const highCount = group.items.filter(i => (i['Oncelik'] || '').toUpperCase() === 'HIGH').length;
 
-  const totalItems = groups.reduce((sum, g) => sum + g.items.length, 0);
-  countEl.textContent = `${totalItems} icerik fikri`;
+    const card = document.createElement('div');
+    card.className = 'analysis-card';
+    card.onclick = () => showAccount(idx);
+    card.innerHTML = `
+      <div class="ac-left">
+        <div class="ac-avatar">${getInitial(username)}</div>
+        <div class="ac-info">
+          <div class="ac-username">@${username}</div>
+          <div class="ac-meta">
+            <span>${dateText}</span>
+            <span>${videoCount} video</span>
+            ${highCount > 0 ? `<span style="color:var(--red)">${highCount} yuksek oncelik</span>` : ''}
+          </div>
+        </div>
+      </div>
+      <div class="ac-arrow">&#8594;</div>
+    `;
+    list.appendChild(card);
+  });
+}
 
-  // Collect categories for filters
+// ============ RENDER VIDEO GRID (Screen 2) ============
+function renderVideoGrid(items) {
+  const grid = document.getElementById('video-grid');
+  const filtersEl = document.getElementById('acc-filters');
   const categories = new Set();
-  groups.forEach(g => g.items.forEach(item => {
-    if (item['Konu Kategorisi']) categories.add(item['Konu Kategorisi']);
-  }));
+  items.forEach(item => { if (item['Konu Kategorisi']) categories.add(item['Konu Kategorisi']); });
 
-  filtersEl.innerHTML = '<button class="filter-btn active" onclick="filterCards(\'all\', this)">Tumu</button>';
+  filtersEl.innerHTML = '<button class="filter-pill active" onclick="filterVideos(\'all\',this)">Tumu</button>';
   categories.forEach(cat => {
-    filtersEl.innerHTML += `<button class="filter-btn" onclick="filterCards('${cat}', this)">${cat}</button>`;
+    filtersEl.innerHTML += `<button class="filter-pill" onclick="filterVideos('${cat}',this)">${cat}</button>`;
   });
 
-  // Render
-  container.innerHTML = '';
-  groups.forEach(group => {
-    if (group.separator) {
-      const sep = document.createElement('div');
-      sep.className = 'separator';
-      sep.innerHTML = `
-        <div class="separator-text">@${group.separator['Kanal'] || ''}</div>
-        <div class="separator-date">${group.separator['Baslik'] || ''}</div>
-      `;
-      container.appendChild(sep);
-    }
+  grid.innerHTML = '';
+  items.forEach((item, idx) => {
+    const thumbnail = item['Thumbnail'] || '';
+    const priority = (item['Oncelik'] || '').toUpperCase();
+    const prioClass = priority === 'HIGH' ? 'high' : priority === 'MEDIUM' ? 'medium' : 'low';
+    const hookScore = item['Hook Skoru'] || '';
+    const videoUrl = item['Video URL'] || '#';
 
-    group.items.forEach((item, idx) => {
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.setAttribute('data-category', item['Konu Kategorisi'] || '');
+    const card = document.createElement('div');
+    card.className = 'video-card';
+    card.setAttribute('data-category', item['Konu Kategorisi'] || '');
 
-      const reelCode = extractReelCode(item['Video URL'] || '');
-      const priority = (item['Oncelik'] || '').toUpperCase();
-      const badgeClass = priority === 'HIGH' ? 'badge-high' : priority === 'MEDIUM' ? 'badge-medium' : 'badge-low';
-      const hookScore = item['Hook Skoru'] || '';
-
-      card.innerHTML = `
-        <div class="card-top">
-          <div class="card-video">
-            ${reelCode
-              ? `<div class="placeholder"><a href="${item['Video URL']}" target="_blank" rel="noopener">Videoyu Instagram'da Ac</a><span style="font-size:11px;margin-top:4px">@${item['Kanal'] || ''}</span></div>`
-              : `<div class="placeholder">Video yok</div>`
-            }
-          </div>
-          <div class="card-meta">
-            <div class="card-channel">@${item['Kanal'] || ''}</div>
-            <div class="card-title">${item['Baslik'] || ''}</div>
-            <div class="card-stats">
-              <div class="stat"><b>${formatNum(item['Views'])}</b> views</div>
-              <div class="stat"><b>${formatNum(item['Likes'])}</b> likes</div>
-              <div class="stat"><b>${formatNum(item['Comments'])}</b> comments</div>
-              <div class="stat"><b>${item['Engagement Rate'] || ''}</b></div>
-            </div>
-            <div class="card-badges">
-              <span class="badge ${badgeClass}">${priority || 'N/A'}</span>
-              <span class="badge badge-category">${item['Konu Kategorisi'] || ''}</span>
-              ${hookScore ? `<span class="badge badge-hook">Hook: ${hookScore}/10</span>` : ''}
-            </div>
-          </div>
+    card.innerHTML = `
+      <div class="vc-thumb" onclick="event.stopPropagation();window.open('${videoUrl}','_blank')">
+        ${thumbnail
+          ? `<img src="${thumbnail}" alt="" loading="lazy" onerror="this.onerror=null;this.src='${PLACEHOLDER_THUMB}'">`
+          : `<div class="vc-thumb-placeholder">Gorsel Yok</div>`
+        }
+        <div class="vc-play"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+        ${priority ? `<div class="vc-priority ${prioClass}">${priority}</div>` : ''}
+      </div>
+      <div class="vc-body" onclick="openModal(${idx})">
+        <div class="vc-channel">@${item['Kanal'] || ''}</div>
+        <div class="vc-title">${item['Baslik'] || 'Baslik yok'}</div>
+        <div class="vc-stats">
+          <div class="vc-stat"><b>${formatNum(item['Views'])}</b> izlenme</div>
+          <div class="vc-stat"><b>${formatNum(item['Likes'])}</b> begeni</div>
+          <div class="vc-stat"><b>${item['Engagement Rate'] || ''}</b></div>
         </div>
-        <div class="card-body collapsed" id="card-body-${idx}">
-          <div class="card-section">
-            <div class="card-section-title">Hook & Icerik Analizi</div>
-            <div class="card-section-text">${item['Hook ve Icerik Analizi'] || ''}</div>
-          </div>
-          <div class="card-section">
-            <div class="card-section-title">Neden Viral</div>
-            <div class="card-section-text">${item['Neden Viral'] || ''}</div>
-          </div>
-          <div class="card-section">
-            <div class="card-section-title">Video Yapisi</div>
-            <div class="card-section-text">${item['Video Yapisi'] || ''}</div>
-          </div>
-          <div class="card-section">
-            <div class="card-section-title">Kali Adaptasyonu</div>
-            <div class="card-section-text">${item['Kali Adaptasyonu'] || ''}</div>
-          </div>
-          <div class="card-section full-width script">
-            <div class="card-section-title">Kerem Icin Script</div>
-            <div class="card-section-text">${item['Kerem Icin Script'] || ''}</div>
-          </div>
-          <div class="card-section full-width">
-            <div class="card-section-title">Produksiyon Notlari</div>
-            <div class="card-section-text">${item['Produksiyon Notlari'] || ''}</div>
-          </div>
-          ${item['Tam Transkript'] ? `
-          <div class="card-section full-width">
-            <div class="card-section-title">Orijinal Transkript</div>
-            <div class="card-section-text" style="font-style:italic;opacity:.7">${item['Tam Transkript']}</div>
-          </div>` : ''}
+        <div class="vc-tags">
+          <span class="vc-tag category">${item['Konu Kategorisi'] || ''}</span>
+          ${hookScore ? `<span class="vc-tag hook">Hook ${hookScore}/10</span>` : ''}
         </div>
-        <button class="card-toggle" onclick="toggleCard('card-body-${idx}', this)">Detaylari Goster</button>
-      `;
-      container.appendChild(card);
-    });
+      </div>
+      <button class="vc-detail-btn" onclick="openModal(${idx})">Detaylari Gor &#8594;</button>
+    `;
+    grid.appendChild(card);
   });
 }
 
-function toggleCard(id, btn) {
-  const body = document.getElementById(id);
-  const collapsed = body.classList.toggle('collapsed');
-  btn.textContent = collapsed ? 'Detaylari Goster' : 'Detaylari Gizle';
-}
-
-function filterCards(category, btn) {
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+function filterVideos(category, btn) {
+  document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  document.querySelectorAll('.card').forEach(card => {
-    if (category === 'all' || card.getAttribute('data-category') === category) {
-      card.style.display = '';
-    } else {
-      card.style.display = 'none';
-    }
+  document.querySelectorAll('.video-card').forEach(card => {
+    card.style.display = (category === 'all' || card.getAttribute('data-category') === category) ? '' : 'none';
   });
 }
 
-function extractReelCode(url) {
-  const m = url.match(/\/reel\/([A-Za-z0-9_-]+)/);
-  return m ? m[1] : '';
+// ============ MODAL (Screen 3) ============
+function openModal(itemIdx) {
+  if (activeGroupIdx < 0 || !allGroups[activeGroupIdx]) return;
+  const item = allGroups[activeGroupIdx].items[itemIdx];
+  if (!item) return;
+
+  const thumbnail = item['Thumbnail'] || '';
+  const priority = (item['Oncelik'] || '').toUpperCase();
+  const prioClass = priority === 'HIGH' ? 'high' : priority === 'MEDIUM' ? 'medium' : 'low';
+  const hookScore = item['Hook Skoru'] || '';
+  const videoUrl = item['Video URL'] || '#';
+
+  // Thumbnail
+  const thumbContainer = document.getElementById('modal-thumb-container');
+  if (thumbnail) {
+    thumbContainer.innerHTML = `<img class="modal-thumb" src="${thumbnail}" alt="" onerror="this.onerror=null;this.outerHTML='<div class=\\'modal-thumb-placeholder\\'>Gorsel yuklenemedi</div>'">`;
+  } else {
+    thumbContainer.innerHTML = '<div class="modal-thumb-placeholder">Gorsel Yok</div>';
+  }
+
+  // Link
+  document.getElementById('modal-ig-link').href = videoUrl;
+
+  // Header
+  document.getElementById('modal-channel').textContent = '@' + (item['Kanal'] || '');
+  document.getElementById('modal-title').textContent = item['Baslik'] || 'Baslik yok';
+
+  document.getElementById('modal-stats').innerHTML = `
+    <div class="modal-stat"><b>${formatNum(item['Views'])}</b> izlenme</div>
+    <div class="modal-stat"><b>${formatNum(item['Likes'])}</b> begeni</div>
+    <div class="modal-stat"><b>${formatNum(item['Comments'])}</b> yorum</div>
+    <div class="modal-stat"><b>${item['Engagement Rate'] || '-'}</b> etkilesim</div>
+  `;
+
+  document.getElementById('modal-badges').innerHTML = `
+    ${priority ? `<span class="m-badge ${prioClass}">${priority}</span>` : ''}
+    <span class="m-badge cat">${item['Konu Kategorisi'] || ''}</span>
+    ${hookScore ? `<span class="m-badge hook">Hook ${hookScore}/10</span>` : ''}
+    <span class="m-badge cat">${item['Format'] || 'Reel'}</span>
+  `;
+
+  // Sections
+  const sections = document.getElementById('modal-sections');
+  sections.innerHTML = '';
+
+  // -- ICERIK ANALIZI --
+  sections.innerHTML += divider('Icerik Analizi');
+  if (item['Hook ve Icerik Analizi']) sections.innerHTML += section('Hook & Icerik Analizi', item['Hook ve Icerik Analizi']);
+  if (item['Video Yapisi']) sections.innerHTML += section('Video Yapisi', item['Video Yapisi']);
+  if (item['Neden Viral']) sections.innerHTML += section('Neden Viral Oldu', item['Neden Viral']);
+
+  // -- KEREM ADAPTASYONU --
+  sections.innerHTML += divider('Kerem Adaptasyonu');
+  if (item['Kali Adaptasyonu']) sections.innerHTML += section('Adaptasyon Stratejisi', item['Kali Adaptasyonu']);
+  if (item['Kerem Icin Script']) sections.innerHTML += `<div class="m-section script"><div class="m-section-title">Senaryo</div><div class="m-section-text">${item['Kerem Icin Script']}</div></div>`;
+  if (item['Produksiyon Notlari']) sections.innerHTML += section('Produksiyon Notlari', item['Produksiyon Notlari']);
+
+  // -- REFERANS --
+  if (item['Tam Transkript']) {
+    sections.innerHTML += divider('Referans');
+    sections.innerHTML += `<div class="m-section transcript" onclick="this.classList.toggle('open')"><div class="m-section-title">Orijinal Transkript</div><div class="m-section-text">${item['Tam Transkript']}</div></div>`;
+  }
+
+  // Show modal
+  document.getElementById('modal-overlay').classList.add('active');
+  document.body.classList.add('modal-open');
+  history.pushState({ screen: 'modal' }, '');
 }
 
-function formatNum(n) {
-  const num = parseInt(n) || 0;
-  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-  if (num >= 1000) return (num / 1000).toFixed(0) + 'K';
-  return num.toString();
+function closeModal(fromPopstate) {
+  document.getElementById('modal-overlay').classList.remove('active');
+  document.body.classList.remove('modal-open');
+  if (!fromPopstate) history.back();
 }
+
+function divider(text) {
+  return `<div class="m-divider"><div class="m-divider-line"></div><div class="m-divider-text">${text}</div><div class="m-divider-line"></div></div>`;
+}
+function section(title, text) {
+  return `<div class="m-section"><div class="m-section-title">${title}</div><div class="m-section-text">${text}</div></div>`;
+}
+
+// ESC to close
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && document.getElementById('modal-overlay').classList.contains('active')) closeModal();
+});
 </script>
 </body>
 </html>
