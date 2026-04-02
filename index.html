@@ -456,7 +456,16 @@ async function fetchSheetData() {
   const rows = [];
   for (const row of json.table.rows) {
     const obj = {};
-    row.c.forEach((cell, i) => { obj[cols[i]] = cell ? (cell.v || '') : ''; });
+    row.c.forEach((cell, i) => {
+      if (!cell) { obj[cols[i]] = ''; return; }
+      // Use formatted value for display strings, raw value for numbers
+      const label = cols[i];
+      if (['Views','Likes','Comments','Hook Skoru'].includes(label)) {
+        obj[label] = cell.v || '';
+      } else {
+        obj[label] = cell.f || String(cell.v || '');
+      }
+    });
     rows.push(obj);
   }
   return rows;
