@@ -110,7 +110,7 @@ a{color:inherit;text-decoration:none}
 .video-card:hover{border-color:rgba(212,43,43,0.25);transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,0.4)}
 .video-card:active{transform:translateY(-1px)}
 
-.vc-thumb{position:relative;aspect-ratio:16/9;background:var(--surface-3);overflow:hidden}
+.vc-thumb{position:relative;aspect-ratio:9/16;background:var(--surface-3);overflow:hidden;max-height:360px}
 .vc-thumb img{width:100%;height:100%;object-fit:cover;transition:transform .3s var(--ease)}
 .video-card:hover .vc-thumb img{transform:scale(1.05)}
 .vc-thumb-placeholder{display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:var(--gray-600);font-size:12px}
@@ -148,8 +148,8 @@ body.modal-open{overflow:hidden}
 .modal-close:hover{background:var(--red)}
 .modal-ig-link{position:absolute;bottom:12px;right:12px;z-index:5;padding:8px 16px;background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:20px;color:white;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;transition:background .2s var(--ease)}
 .modal-ig-link:hover{background:var(--red)}
-.modal-thumb{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:var(--surface-3)}
-.modal-thumb-placeholder{width:100%;aspect-ratio:16/9;background:var(--surface-3);display:flex;align-items:center;justify-content:center;color:var(--gray-600)}
+.modal-thumb{width:100%;aspect-ratio:9/16;max-height:480px;object-fit:cover;display:block;background:var(--surface-3)}
+.modal-thumb-placeholder{width:100%;aspect-ratio:9/16;max-height:480px;background:var(--surface-3);display:flex;align-items:center;justify-content:center;color:var(--gray-600)}
 
 .modal-header{padding:20px 24px 16px}
 .modal-channel{font-size:12px;color:var(--red);font-weight:600;letter-spacing:.5px;margin-bottom:6px}
@@ -421,7 +421,8 @@ function showAccount(groupIdx) {
   activeGroupIdx = groupIdx;
   const group = allGroups[groupIdx];
   if (!group) return;
-  const username = group.separator ? (group.separator['Kanal'] || '') : 'Bilinmeyen';
+  const rawUser = group.separator ? (group.separator['Kanal'] || '') : 'Bilinmeyen';
+  const username = rawUser.replace(/^@/, '');
   const dateText = group.separator ? (group.separator['Baslik'] || '') : '';
 
   document.getElementById('acc-avatar').textContent = getInitial(username);
@@ -554,16 +555,24 @@ function processData(data) {
   allGroups = [];
   let currentGroup = null;
   for (const row of data) {
-    if (String(row['No']).trim() === '>>') {
+    const noVal = String(row['No'] || '').trim();
+    const kanal = String(row['Kanal'] || '').trim();
+    // Separator row: No is empty (or '>>') but Kanal has username
+    const isSeparator = (!noVal || noVal === '>>') && kanal;
+    // Data row: No is a number
+    const isDataRow = noVal && !isNaN(parseFloat(noVal));
+
+    if (isSeparator) {
       currentGroup = { separator: row, items: [] };
       allGroups.push(currentGroup);
-    } else if (currentGroup && row['No']) {
-      currentGroup.items.push(row);
-    } else if (!currentGroup && row['No']) {
-      if (!allGroups.length || allGroups[allGroups.length - 1].separator) {
-        allGroups.push({ separator: null, items: [] });
+    } else if (isDataRow) {
+      if (!currentGroup) {
+        // Old data without separator — create synthetic group from first row's Kanal
+        const synthSep = { 'Kanal': kanal || 'Bilinmeyen', 'Baslik': '' };
+        currentGroup = { separator: synthSep, items: [] };
+        allGroups.push(currentGroup);
       }
-      allGroups[allGroups.length - 1].items.push(row);
+      currentGroup.items.push(row);
     }
   }
   allGroups.reverse();
@@ -585,7 +594,8 @@ function renderHistory() {
   countEl.textContent = allGroups.length + ' analiz';
   list.innerHTML = '';
   allGroups.forEach((group, idx) => {
-    const username = group.separator ? (group.separator['Kanal'] || 'Bilinmeyen') : 'Bilinmeyen';
+    const rawUsername = group.separator ? (group.separator['Kanal'] || 'Bilinmeyen') : 'Bilinmeyen';
+    const username = rawUsername.replace(/^@/, '');
     const dateText = group.separator ? (group.separator['Baslik'] || '') : '';
     const videoCount = group.items.length;
     const highCount = group.items.filter(i => (i['Oncelik'] || '').toUpperCase() === 'HIGH').length;
