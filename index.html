@@ -486,12 +486,15 @@ async function startAnalysis() {
   status.className = 'form-status';
   loadingBar.classList.add('active');
   try {
+    // Mevcut satir sayisini kaydet (yeni veri tespiti icin)
+    let rowCountBefore = 0;
+    try { const d = await fetchSheetData(); rowCountBefore = d.length; } catch(e) {}
     const resp = await fetch(WEBHOOK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, secret: WEBHOOK_SECRET }) });
     if (!resp.ok) throw new Error('Webhook hatasi');
     incrementDaily();
     status.textContent = `@${username} analizi baslatildi! Sonuclar asagida gorunecek.`;
     status.className = 'form-status success';
-    pollForResults(username);
+    pollForResults(username, rowCountBefore);
   } catch (e) {
     status.textContent = 'Bir hata olustu. Lutfen tekrar deneyin.';
     status.className = 'form-status error';
@@ -500,7 +503,7 @@ async function startAnalysis() {
   }
 }
 
-function pollForResults(username) {
+function pollForResults(username, rowCountBefore) {
   let polls = 0;
   const loadingBar = document.getElementById('loading-bar');
   const status = document.getElementById('form-status');
@@ -515,16 +518,25 @@ function pollForResults(username) {
       btn.disabled = false; btn.textContent = 'Analiz Et';
       return;
     }
+    status.textContent = `@${username} analiz ediliyor... (${polls * 15}sn)`;
     try {
       const data = await fetchSheetData();
-      const hasNew = data.some(row => row['Kanal'] && row['Kanal'].toLowerCase().includes(username.toLowerCase()));
-      if (hasNew) {
-        clearInterval(interval);
-        loadingBar.classList.remove('active');
-        status.textContent = `@${username} analizi tamamlandi!`;
-        status.className = 'form-status success';
-        btn.disabled = false; btn.textContent = 'Analiz Et';
-        processData(data);
+      // Yeni satirlar eklenmis mi kontrol et (eski veriye takilma)
+      if (data.length > rowCountBefore) {
+        // Yeni eklenen satirlarda bu username var mi?
+        const newRows = data.slice(rowCountBefore);
+        const hasNew = newRows.some(row => {
+          const kanal = String(row['Kanal'] || '').toLowerCase();
+          return kanal.includes(username.toLowerCase());
+        });
+        if (hasNew) {
+          clearInterval(interval);
+          loadingBar.classList.remove('active');
+          status.textContent = `@${username} analizi tamamlandi!`;
+          status.className = 'form-status success';
+          btn.disabled = false; btn.textContent = 'Analiz Et';
+          processData(data);
+        }
       }
     } catch (e) {}
   }, 15000);
